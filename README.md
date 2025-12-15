@@ -147,11 +147,11 @@ Currently, the best way to learn WebCC is to explore the header files and exampl
 ## Project Structure
 
 - `webcc/`: Source code for the CLI tool and runtime.
-  - `cli/`: Entry point for the CLI.
   - `src/`: Implementation of the generator and command buffer.
   - `include/`: Public headers (`webcc.h`, etc.).
-- `examples/`: Example projects demonstrating different features.
-- `commands.def`: Definition file for all supported Web API commands.
+  - `examples/`: Example projects demonstrating different features.
+  - `commands.def`: Definition file for all supported Web API commands.
+  - `build.sh`: Build script for the CLI tool.
 
 ## License
 

@@ -91,8 +91,6 @@ run();
 // 2. The Feature Database
 // -----------------------------------------------------------------------------
 
-// (Replaced by gen_js_case which uses the defs file.)
-
 // The Feature Database is driven by `webcc/commands.def`
 
 struct Param {

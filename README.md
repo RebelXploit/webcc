@@ -78,7 +78,7 @@
    Run the `webcc` tool (ensure you have built it first!) from the root of the repository, passing your source file:
 
    ```bash
-   ./webcc/webcc main.cc
+   ./webcc main.cc
    ```
 
    This will generate:
@@ -133,7 +133,7 @@ Creating and styling HTML elements from C++.
 
 To build an example:
 ```bash
-./webcc/webcc examples/webcc_canvas/example.cc
+./webcc examples/webcc_canvas/example.cc
 ```
 
 ## Documentation

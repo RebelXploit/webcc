@@ -90,6 +90,7 @@ float angle = 0.0f;
 
 float last_time = 0.0f;
 float fps = 0.0f;
+int hud_canvas = 0;
 
 extern "C" void update(float time_ms) {
    // Calculate Delta Time (in seconds)
@@ -127,10 +128,10 @@ extern "C" void update(float time_ms) {
     webcc::webgl::draw_arrays("gl", 0x0004, 0, 36); // GL_TRIANGLES
 
     // Draw FPS text via Canvas 2D overlay
-    webcc::canvas::clear_rect("hud-canvas", 0, 0, 200, 40);
-    webcc::canvas::set_font("hud-canvas", "20px Arial");
-    webcc::canvas::set_fill_style("hud-canvas", 0, 255, 0);
-    webcc::canvas::fill_text_f("hud-canvas", "FPS: %f", fps, 10, 25);
+    webcc::canvas::clear_rect(hud_canvas, 0, 0, 200, 40);
+    webcc::canvas::set_font(hud_canvas, "20px Arial");
+    webcc::canvas::set_fill_style(hud_canvas, 0, 255, 0);
+    webcc::canvas::fill_text_f(hud_canvas, "FPS: %f", fps, 10, 25);
 
     webcc::flush();
 }
@@ -138,38 +139,40 @@ extern "C" void update(float time_ms) {
 int main() {
     webcc::system::set_title("WebCC WebGL Demo");
     
+    int body = webcc::dom::get_body();
+
     // Style the body to center content
-    webcc::dom::set_attribute("body", "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
+    webcc::dom::set_attribute(body, "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
 
     // Create a container for the game
-    webcc::dom::create_element("game-container", "div");
-    webcc::dom::set_attribute("game-container", "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 10px;");
-    webcc::dom::append_child("body", "game-container");
+    int game_container = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(game_container, "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 10px;");
+    webcc::dom::append_child(body, game_container);
 
     // Add a title via DOM
-    webcc::dom::create_element("game-title", "h1");
-    webcc::dom::set_inner_text("game-title", "WebCC WebGL Demo");
-    webcc::dom::set_attribute("game-title", "style", "color: #fff; margin: 10px 0; font-family: monospace;");
-    webcc::dom::append_child("game-container", "game-title");
+    int game_title = webcc::dom::create_element("h1");
+    webcc::dom::set_inner_text(game_title, "WebCC WebGL Demo");
+    webcc::dom::set_attribute(game_title, "style", "color: #fff; margin: 10px 0; font-family: monospace;");
+    webcc::dom::append_child(game_container, game_title);
 
     // Add some description text
-    webcc::dom::create_element("game-desc", "p");
-    webcc::dom::set_inner_text("game-desc", "This is a 3D Cube rendered with WebGL via WebCC.");
-    webcc::dom::set_attribute("game-desc", "style", "color: #aaa; margin-bottom: 20px; font-size: 14px;");
-    webcc::dom::append_child("game-container", "game-desc");
+    int game_desc = webcc::dom::create_element("p");
+    webcc::dom::set_inner_text(game_desc, "This is a 3D Cube rendered with WebGL via WebCC.");
+    webcc::dom::set_attribute(game_desc, "style", "color: #aaa; margin-bottom: 20px; font-size: 14px;");
+    webcc::dom::append_child(game_container, game_desc);
 
     // HUD canvas overlay for FPS (like canvas example)
-    webcc::canvas::create_canvas("hud-canvas", 800, 600);
-    webcc::dom::set_attribute("hud-canvas", "style", "position: absolute; left: 0; top: 0; pointer-events: none;");
-    webcc::dom::append_child("game-container", "hud-canvas");
+    hud_canvas = webcc::canvas::create_canvas("hud-canvas", 800, 600);
+    webcc::dom::set_attribute(hud_canvas, "style", "position: absolute; left: 0; top: 0; pointer-events: none;");
+    webcc::dom::append_child(game_container, hud_canvas);
 
-    webcc::dom::create_element("gl-canvas", "canvas");
-    webcc::dom::set_attribute("gl-canvas", "width", "600");
-    webcc::dom::set_attribute("gl-canvas", "height", "600");
-    webcc::dom::append_child("game-container", "gl-canvas");
+    int gl_canvas = webcc::dom::create_element("canvas");
+    webcc::dom::set_attribute(gl_canvas, "width", "600");
+    webcc::dom::set_attribute(gl_canvas, "height", "600");
+    webcc::dom::append_child(game_container, gl_canvas);
 
     // Initialize WebGL
-    webcc::webgl::create_context("gl", "gl-canvas");
+    webcc::webgl::create_context("gl", gl_canvas);
     webcc::webgl::enable("gl", 0x0B71); // GL_DEPTH_TEST
 
     // Create Shaders

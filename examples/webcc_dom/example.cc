@@ -6,6 +6,12 @@ int item_count = 0;
 int last_clicked_x = 0;
 int last_clicked_y = 0;
 
+// Global handles
+int box_container = 0;
+int counter_el = 0;
+int click_pos_el = 0;
+int add_btn = 0;
+
 // Helper for int to string
 void int_to_str(int v, char* buf) {
     if (v == 0) {
@@ -72,16 +78,9 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
     char num[16];
     int i;
     
-    // Build item_id: "item-X"
-    char item_id[32];
-    const char* prefix = "item-";
-    i = 0;
-    for (int k = 0; prefix[k]; ++k) item_id[i++] = prefix[k];
     int_to_str(item_count, num);
-    for (int k = 0; num[k]; ++k) item_id[i++] = num[k];
-    item_id[i] = '\0';
     
-    webcc::dom::create_element(item_id, "div");
+    int item = webcc::dom::create_element("div");
     
     // Build text: "Box #X"
     char text[64];
@@ -91,7 +90,7 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
     for (int k = 0; num[k]; ++k) text[i++] = num[k];
     text[i] = '\0';
     
-    webcc::dom::set_inner_text(item_id, text);
+    webcc::dom::set_inner_text(item, text);
     
     // Generate random color
     char color[32];
@@ -106,8 +105,8 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
     style[i++] = ';';
     style[i] = '\0';
     
-    webcc::dom::set_attribute(item_id, "style", style);
-    webcc::dom::append_child("box-container", item_id);
+    webcc::dom::set_attribute(item, "style", style);
+    webcc::dom::append_child(box_container, item);
 
     // Update counter
     int_to_str(item_count, num);
@@ -117,7 +116,7 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
     for(int k=0; ct[k]; ++k) counter_text[i++] = ct[k];
     for(int k=0; num[k]; ++k) counter_text[i++] = num[k];
     counter_text[i] = '\0';
-    webcc::dom::set_inner_text("counter", counter_text);
+    webcc::dom::set_inner_text(counter_el, counter_text);
 
     // Update click position
     char click_text[64];
@@ -132,7 +131,7 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
     for(int k=0; num[k]; ++k) click_text[i++] = num[k];
     click_text[i++] = ')';
     click_text[i] = '\0';
-    webcc::dom::set_inner_text("click-pos", click_text);
+    webcc::dom::set_inner_text(click_pos_el, click_text);
 
     webcc::flush();
 }
@@ -140,51 +139,53 @@ extern "C" void webcc_on_mousedown(int button, int x, int y) {
 int main() {
     webcc::system::set_title("WebCC DOM Demo");
     
+    int body = webcc::dom::get_body();
+
     // Style the body to center content
-    webcc::dom::set_attribute("body", "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
+    webcc::dom::set_attribute(body, "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
 
     // Create a container for the game
-    webcc::dom::create_element("game-container", "div");
-    webcc::dom::set_attribute("game-container", "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 20px; min-width: 500px;");
-    webcc::dom::append_child("body", "game-container");
+    int game_container = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(game_container, "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 20px; min-width: 500px;");
+    webcc::dom::append_child(body, game_container);
 
     // Add a title via DOM
-    webcc::dom::create_element("game-title", "h1");
-    webcc::dom::set_inner_text("game-title", "WebCC DOM Demo");
-    webcc::dom::set_attribute("game-title", "style", "color: #fff; margin: 10px 0; font-family: monospace;");
-    webcc::dom::append_child("game-container", "game-title");
+    int game_title = webcc::dom::create_element("h1");
+    webcc::dom::set_inner_text(game_title, "WebCC DOM Demo");
+    webcc::dom::set_attribute(game_title, "style", "color: #fff; margin: 10px 0; font-family: monospace;");
+    webcc::dom::append_child(game_container, game_title);
 
     // Add some description text
-    webcc::dom::create_element("game-desc", "p");
-    webcc::dom::set_inner_text("game-desc", "Click the button below to create colorful boxes with random colors. The DOM is controlled through C++!");
-    webcc::dom::set_attribute("game-desc", "style", "color: #aaa; margin-bottom: 20px; font-size: 14px; text-align: center;");
-    webcc::dom::append_child("game-container", "game-desc");
+    int game_desc = webcc::dom::create_element("p");
+    webcc::dom::set_inner_text(game_desc, "Click the button below to create colorful boxes with random colors. The DOM is controlled through C++!");
+    webcc::dom::set_attribute(game_desc, "style", "color: #aaa; margin-bottom: 20px; font-size: 14px; text-align: center;");
+    webcc::dom::append_child(game_container, game_desc);
 
     // Stats container
-    webcc::dom::create_element("stats", "div");
-    webcc::dom::set_attribute("stats", "style", "display: flex; gap: 20px; margin-bottom: 20px; font-size: 14px; color: #4CAF50;");
-    webcc::dom::append_child("game-container", "stats");
+    int stats = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(stats, "style", "display: flex; gap: 20px; margin-bottom: 20px; font-size: 14px; color: #4CAF50;");
+    webcc::dom::append_child(game_container, stats);
 
-    webcc::dom::create_element("counter", "div");
-    webcc::dom::set_inner_text("counter", "Total Boxes: 0");
-    webcc::dom::append_child("stats", "counter");
+    counter_el = webcc::dom::create_element("div");
+    webcc::dom::set_inner_text(counter_el, "Total Boxes: 0");
+    webcc::dom::append_child(stats, counter_el);
 
-    webcc::dom::create_element("click-pos", "div");
-    webcc::dom::set_inner_text("click-pos", "Last Click: (0, 0)");
-    webcc::dom::append_child("stats", "click-pos");
+    click_pos_el = webcc::dom::create_element("div");
+    webcc::dom::set_inner_text(click_pos_el, "Last Click: (0, 0)");
+    webcc::dom::append_child(stats, click_pos_el);
 
     // Create a button
-    webcc::dom::create_element("add-btn", "button");
-    webcc::dom::set_inner_text("add-btn", "Create Box");
-    webcc::dom::set_attribute("add-btn", "style", "padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; transition: background 0.3s; margin-bottom: 20px;");
-    webcc::dom::append_child("game-container", "add-btn");
+    add_btn = webcc::dom::create_element("button");
+    webcc::dom::set_inner_text(add_btn, "Create Box");
+    webcc::dom::set_attribute(add_btn, "style", "padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; transition: background 0.3s; margin-bottom: 20px;");
+    webcc::dom::append_child(game_container, add_btn);
 
     // Container for boxes
-    webcc::dom::create_element("box-container", "div");
-    webcc::dom::set_attribute("box-container", "style", "display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 600px; padding: 20px; background: #1a1a1a; border-radius: 10px; min-height: 100px;");
-    webcc::dom::append_child("game-container", "box-container");
+    box_container = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(box_container, "style", "display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 600px; padding: 20px; background: #1a1a1a; border-radius: 10px; min-height: 100px;");
+    webcc::dom::append_child(game_container, box_container);
 
-    webcc::input::init_mouse("add-btn");
+    webcc::input::init_mouse(add_btn);
 
     webcc::flush();
     return 0;

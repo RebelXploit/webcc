@@ -3,24 +3,24 @@
 
 namespace webcc::input {
     enum OpCode {
-        OP_INIT_KEYBOARD = 0x2b,
-        OP_INIT_MOUSE = 0x2c,
-        OP_REQUEST_POINTER_LOCK = 0x2d,
-        OP_EXIT_POINTER_LOCK = 0x2e
+        OP_INIT_KEYBOARD = 0x2c,
+        OP_INIT_MOUSE = 0x2d,
+        OP_REQUEST_POINTER_LOCK = 0x2e,
+        OP_EXIT_POINTER_LOCK = 0x2f
     };
 
     inline void init_keyboard(){
         push_command((uint8_t)OP_INIT_KEYBOARD);
     }
 
-    inline void init_mouse(const char* element_id){
+    inline void init_mouse(int32_t handle){
         push_command((uint8_t)OP_INIT_MOUSE);
-        { uint32_t len = strlen(element_id); push_data<uint32_t>(len); webcc::CommandBuffer::push_bytes((const uint8_t*)element_id, len); }
+        push_data<int32_t>(handle);
     }
 
-    inline void request_pointer_lock(const char* id){
+    inline void request_pointer_lock(int32_t handle){
         push_command((uint8_t)OP_REQUEST_POINTER_LOCK);
-        { uint32_t len = strlen(id); push_data<uint32_t>(len); webcc::CommandBuffer::push_bytes((const uint8_t*)id, len); }
+        push_data<int32_t>(handle);
     }
 
     inline void exit_pointer_lock(){

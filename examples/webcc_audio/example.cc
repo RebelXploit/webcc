@@ -5,6 +5,9 @@
 
 // Global state
 bool is_playing = false;
+int bg_music = 0;
+int play_btn = 0;
+int progress_bar_fill = 0;
 
 // Helper for int to string
 void int_to_str(int v, char* buf) {
@@ -48,12 +51,12 @@ void make_width_style(int percent, char* buf) {
 
 extern "C" void webcc_on_mousedown(int button, int x, int y) {
     if (is_playing) {
-        webcc::audio::pause("bg-music");
-        webcc::dom::set_inner_text("play-btn", "Play Music");
+        webcc::audio::pause(bg_music);
+        webcc::dom::set_inner_text(play_btn, "Play Music");
         is_playing = false;
     } else {
-        webcc::audio::play("bg-music");
-        webcc::dom::set_inner_text("play-btn", "Pause Music");
+        webcc::audio::play(bg_music);
+        webcc::dom::set_inner_text(play_btn, "Pause Music");
         is_playing = true;
     }
     webcc::flush();
@@ -64,8 +67,8 @@ extern "C" void webcc_on_mousemove(int x, int y) {}
 
 extern "C" void update(float time_ms) {
     if (is_playing) {
-        float current_time = webcc::audio::get_current_time("bg-music");
-        float duration = webcc::audio::get_duration("bg-music");
+        float current_time = webcc::audio::get_current_time(bg_music);
+        float duration = webcc::audio::get_duration(bg_music);
         if (duration > 0) {
             float progress = current_time / duration;
             char style[128];
@@ -82,7 +85,7 @@ extern "C" void update(float time_ms) {
             for(int k=0; suffix[k]; ++k) style[i++] = suffix[k];
             style[i] = '\0';
             
-            webcc::dom::set_attribute("progress-bar-fill", "style", style);
+            webcc::dom::set_attribute(progress_bar_fill, "style", style);
         }
     }
     webcc::flush();
@@ -91,47 +94,49 @@ extern "C" void update(float time_ms) {
 int main() {
     webcc::system::set_title("WebCC Audio Demo");
     
+    int body = webcc::dom::get_body();
+
     // Style the body to center content
-    webcc::dom::set_attribute("body", "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
+    webcc::dom::set_attribute(body, "style", "margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #111; color: #eee; font-family: sans-serif;");
 
     // Create a container for the game
-    webcc::dom::create_element("game-container", "div");
-    webcc::dom::set_attribute("game-container", "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 20px; min-width: 300px;");
-    webcc::dom::append_child("body", "game-container");
+    int game_container = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(game_container, "style", "position: relative; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; background: #222; padding: 20px; min-width: 300px;");
+    webcc::dom::append_child(body, game_container);
 
     // Add a title via DOM
-    webcc::dom::create_element("game-title", "h1");
-    webcc::dom::set_inner_text("game-title", "WebCC Audio Demo");
-    webcc::dom::set_attribute("game-title", "style", "color: #fff; margin: 10px 0; font-family: monospace;");
-    webcc::dom::append_child("game-container", "game-title");
+    int game_title = webcc::dom::create_element("h1");
+    webcc::dom::set_inner_text(game_title, "WebCC Audio Demo");
+    webcc::dom::set_attribute(game_title, "style", "color: #fff; margin: 10px 0; font-family: monospace;");
+    webcc::dom::append_child(game_container, game_title);
 
     // Add some description text
-    webcc::dom::create_element("game-desc", "p");
-    webcc::dom::set_inner_text("game-desc", "This demo shows how to play audio from C++ via WebCC. Click the button to toggle playback.");
-    webcc::dom::set_attribute("game-desc", "style", "color: #aaa; margin-bottom: 20px; font-size: 14px; text-align: center;");
-    webcc::dom::append_child("game-container", "game-desc");
+    int game_desc = webcc::dom::create_element("p");
+    webcc::dom::set_inner_text(game_desc, "This demo shows how to play audio from C++ via WebCC. Click the button to toggle playback.");
+    webcc::dom::set_attribute(game_desc, "style", "color: #aaa; margin-bottom: 20px; font-size: 14px; text-align: center;");
+    webcc::dom::append_child(game_container, game_desc);
 
     // Create audio element
-    webcc::audio::create_audio("bg-music", "assets/music.mp3");
-    webcc::audio::set_loop("bg-music", 1);
-    webcc::audio::set_volume("bg-music", 0.5f);
+    bg_music = webcc::audio::create_audio("assets/music.mp3");
+    webcc::audio::set_loop(bg_music, 1);
+    webcc::audio::set_volume(bg_music, 0.5f);
 
     // Create a progress bar
-    webcc::dom::create_element("progress-bar-container", "div");
-    webcc::dom::set_attribute("progress-bar-container", "style", "width: 80%; height: 10px; background: #111; border: 1px solid #444; border-radius: 5px; margin-bottom: 20px;");
-    webcc::dom::append_child("game-container", "progress-bar-container");
+    int progress_bar_container = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(progress_bar_container, "style", "width: 80%; height: 10px; background: #111; border: 1px solid #444; border-radius: 5px; margin-bottom: 20px;");
+    webcc::dom::append_child(game_container, progress_bar_container);
 
-    webcc::dom::create_element("progress-bar-fill", "div");
-    webcc::dom::set_attribute("progress-bar-fill", "style", "width: 0%; height: 100%; background: #4CAF50; border-radius: 5px;");
-    webcc::dom::append_child("progress-bar-container", "progress-bar-fill");
+    progress_bar_fill = webcc::dom::create_element("div");
+    webcc::dom::set_attribute(progress_bar_fill, "style", "width: 0%; height: 100%; background: #4CAF50; border-radius: 5px;");
+    webcc::dom::append_child(progress_bar_container, progress_bar_fill);
 
     // Create a button
-    webcc::dom::create_element("play-btn", "button");
-    webcc::dom::set_inner_text("play-btn", "Play Music");
-    webcc::dom::set_attribute("play-btn", "style", "padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; transition: background 0.3s;");
-    webcc::dom::append_child("game-container", "play-btn");
+    play_btn = webcc::dom::create_element("button");
+    webcc::dom::set_inner_text(play_btn, "Play Music");
+    webcc::dom::set_attribute(play_btn, "style", "padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; transition: background 0.3s;");
+    webcc::dom::append_child(game_container, play_btn);
 
-    webcc::input::init_mouse("play-btn");
+    webcc::input::init_mouse(play_btn);
     
     webcc::system::set_main_loop("update");
 

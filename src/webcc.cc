@@ -232,8 +232,13 @@ static void emit_command_headers(const std::vector<CommandDef>& defs){
             if(d.ns != ns) continue;
 
             if (!d.return_type.empty()) {
+                std::string ret_type = d.return_type;
+                if(ret_type == "int32") ret_type = "int32_t";
+                else if(ret_type == "uint32") ret_type = "uint32_t";
+                else if(ret_type == "float32") ret_type = "float";
+
                 // Generate extern "C" import
-                out << "    extern \"C\" " << d.return_type << " webcc_" << d.ns << "_" << d.func_name << "(";
+                out << "    extern \"C\" " << ret_type << " webcc_" << d.ns << "_" << d.func_name << "(";
                 for(size_t i=0;i<d.params.size();++i){
                     if(i) out << ", ";
                     const auto& p = d.params[i];
@@ -248,7 +253,7 @@ static void emit_command_headers(const std::vector<CommandDef>& defs){
                 out << ");\n";
                 
                 // Generate inline wrapper
-                out << "    inline " << d.return_type << " " << d.func_name << "(";
+                out << "    inline " << ret_type << " " << d.func_name << "(";
                 for(size_t i=0;i<d.params.size();++i){
                     if(i) out << ", ";
                     const auto& p = d.params[i];

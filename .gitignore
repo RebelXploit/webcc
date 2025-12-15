@@ -1,0 +1,13 @@
+# Binaries
+webcc/webcc
+
+# Generated Web Artifacts (produced by the tool)
+app.wasm
+app.js
+index.html
+
+# OS / Editor junk
+.DS_Store
+.vscode/
+build/
+dist/

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/logo.png" alt="WebCC Logo" width="250">
+</p>
+
 # WebCC
 
 **WebCC** is a lightweight, zero-dependency C++ framework for building WebAssembly applications. It provides a direct, high-performance bridge between C++ and HTML5 APIs (DOM, Canvas, WebGL, Audio, ...) without the overhead of heavy runtimes like Emscripten.
@@ -128,7 +132,7 @@ To add a new Web API feature, you simply add one line to `commands.def` and rebu
 - **Contributions welcome.** If you'd like to add a command, update `webcc/commands.def` following the file format and run `./build.sh` to regenerate headers and `app.js`.
 - **Small PRs are best.** Include a short example (or a unit test) demonstrating the new API and a brief description in the PR.
 - **Tips:** Prefer returning integer handles for created resources (use `RET:int32`), register DOM/audio/image objects in the `elements` map when appropriate, and ensure your JS implementation is robust (checks for missing handles, etc.).
-
+****
 
 ## Modules
 

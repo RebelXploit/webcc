@@ -11,4 +11,4 @@ g++ -std=c++17 -O2 -o webcc \
 echo "[WebCC] Build complete: webcc"
 
 echo "[WebCC] Generating headers..."
-./webcc headers
+./webcc --headers

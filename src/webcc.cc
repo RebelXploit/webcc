@@ -689,7 +689,7 @@ int main(int argc, char **argv)
                 return 1;
             }
         }
-        else if (arg == "headers")
+        else if (arg == "--headers")
         {
             generate_headers = true;
         }

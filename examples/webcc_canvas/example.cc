@@ -17,21 +17,31 @@ int hud_canvas = 0;
 float last_time = 0.0f;
 float fps = 0.0f;
 
-// Input callbacks exported to JS
-extern "C" void webcc_on_mousemove(int x, int y) {
-    mouse_x = (float)x;
-    mouse_y = (float)y;
-}
-
-extern "C" void webcc_on_mousedown(int button, int x, int y) {
-    is_clicking = true;
-}
-
-extern "C" void webcc_on_mouseup(int button, int x, int y) {
-    is_clicking = false;
-}
-
 extern "C" void update(float time_ms) {
+    // Poll events
+    uint8_t opcode;
+    const uint8_t* data;
+    uint32_t len;
+    while (webcc::poll_event(opcode, &data, len)) {
+        switch (opcode) {
+            case webcc::input::EVENT_MOUSE_MOVE: {
+                int32_t args[2];
+                __builtin_memcpy(args, data, 8);
+                mouse_x = (float)args[0];
+                mouse_y = (float)args[1];
+                break;
+            }
+            case webcc::input::EVENT_MOUSE_DOWN: {
+                is_clicking = true;
+                break;
+            }
+            case webcc::input::EVENT_MOUSE_UP: {
+                is_clicking = false;
+                break;
+            }
+        }
+    }
+
     // Calculate Delta Time (in seconds)
     float delta_time = (time_ms - last_time) / 1000.0f;
     last_time = time_ms;

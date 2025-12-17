@@ -8,7 +8,7 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_ROOT="$SCRIPT_DIR/../.."
 
-echo "Building webcc_dom example..."
+echo "Building webcc_audio example..."
 
 # Run webcc from the repo root (webcc expects to be run from there)
 cd "$REPO_ROOT"

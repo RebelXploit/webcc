@@ -49,23 +49,27 @@ void make_width_style(int percent, char* buf) {
     buf[i] = '\0';
 }
 
-extern "C" void webcc_on_mousedown(int button, int x, int y) {
-    if (is_playing) {
-        webcc::audio::pause(bg_music);
-        webcc::dom::set_inner_text(play_btn, "Play Music");
-        is_playing = false;
-    } else {
-        webcc::audio::play(bg_music);
-        webcc::dom::set_inner_text(play_btn, "Pause Music");
-        is_playing = true;
-    }
-    webcc::flush();
-}
-
-extern "C" void webcc_on_mouseup(int button, int x, int y) {}
-extern "C" void webcc_on_mousemove(int x, int y) {}
-
 extern "C" void update(float time_ms) {
+    // Poll events
+    uint8_t opcode;
+    const uint8_t* data;
+    uint32_t len;
+    while (webcc::poll_event(opcode, &data, len)) {
+        switch (opcode) {
+            case webcc::input::EVENT_MOUSE_DOWN: {
+                if (is_playing) {
+                    webcc::audio::pause(bg_music);
+                    webcc::dom::set_inner_text(play_btn, "Play Music");
+                    is_playing = false;
+                } else {
+                    webcc::audio::play(bg_music);
+                    webcc::dom::set_inner_text(play_btn, "Pause Music");
+                    is_playing = true;
+                }
+                break;
+            }
+        }
+    }
     if (is_playing) {
         float current_time = webcc::audio::get_current_time(bg_music);
         float duration = webcc::audio::get_duration(bg_music);

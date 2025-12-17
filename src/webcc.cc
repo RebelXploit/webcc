@@ -883,7 +883,9 @@ int main(int argc, char **argv)
         }
         final_js << ") {\n";
         final_js << "        let pos = event_offset_view[0];\n";
+        final_js << "        const start_pos = pos;\n";
         final_js << "        event_view.setUint8(pos, " << (int)d.opcode << "); pos += 1;\n";
+        final_js << "        pos += 2; // Skip size\n";
         for (size_t i = 0; i < d.params.size(); ++i)
         {
             const auto &p = d.params[i];
@@ -902,6 +904,8 @@ int main(int argc, char **argv)
                 final_js << "        pos += encoded_" << i << ".length;\n";
             }
         }
+        final_js << "        const len = pos - start_pos;\n";
+        final_js << "        event_view.setUint16(start_pos + 1, len, true);\n";
         final_js << "        event_offset_view[0] = pos;\n";
         final_js << "    }\n";
     }

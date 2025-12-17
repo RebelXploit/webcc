@@ -123,7 +123,7 @@ Creating and styling HTML elements from C++.
 2.  **Prerequisites**:
     - Linux/macOS with Bash.
     - `clang++` (version 8+ recommended) for compiling WASM.
-    - A C++17 compiler for building the CLI tool.
+    - A C++20 compiler for building the CLI tool.
 
 ## Architecture
 

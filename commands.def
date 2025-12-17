@@ -95,9 +95,9 @@ audio|GET_DURATION|get_duration|int32:handle RET:float|{ const a = audios.get(ha
 # ------------------------------------------------------------------------------
 # WEBSOCKETS
 # ------------------------------------------------------------------------------
-websocket|CREATE|create|string:id string:url|{ const ws = new WebSocket(url); websockets.set(id, ws); ws.onopen = () => console.log('WS Open', id); ws.onmessage = (e) => console.log('WS Msg', id, e.data); }
-websocket|SEND|send|string:id string:msg|{ const ws = websockets.get(id); if(ws && ws.readyState === 1) ws.send(msg); }
-websocket|CLOSE|close|string:id|{ const ws = websockets.get(id); if(ws) ws.close(); }
+websocket|CREATE|create|string:url RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const ws = new WebSocket(url); websockets.set(handle, ws); ws.onopen = () => console.log('WS Open', handle); ws.onmessage = (e) => console.log('WS Msg', handle, e.data); return handle; }
+websocket|SEND|send|int32:handle string:msg|{ const ws = websockets.get(handle); if(ws && ws.readyState === 1) ws.send(msg); }
+websocket|CLOSE|close|int32:handle|{ const ws = websockets.get(handle); if(ws) ws.close(); }
 
 # ------------------------------------------------------------------------------
 # IMAGES
@@ -107,20 +107,21 @@ image|LOAD|load|string:src RET:int32|{ const handle = (window.webcc_next_id = (w
 # ------------------------------------------------------------------------------
 # WEBGL
 # ------------------------------------------------------------------------------
-webgl|CREATE_CONTEXT|create_context|string:id int32:canvas_handle|{ const c = canvases.get(canvas_handle) || elements.get(canvas_handle); if(c) { const gl = c.getContext('webgl'); contexts.set(id, gl); } }
-webgl|CLEAR_COLOR|clear_color|string:id float32:r float32:g float32:b float32:a|{ const gl = contexts.get(id); if(gl) gl.clearColor(r, g, b, a); }
-webgl|CLEAR|clear|string:id uint32:mask|{ const gl = contexts.get(id); if(gl) gl.clear(mask); }
-webgl|CREATE_SHADER|create_shader|string:ctx_id string:shader_id uint32:type string:source|{ const gl = contexts.get(ctx_id); if(gl) { const s = gl.createShader(type); gl.shaderSource(s, source); gl.compileShader(s); if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); shaders.set(shader_id, s); } }
-webgl|CREATE_PROGRAM|create_program|string:ctx_id string:prog_id|{ const gl = contexts.get(ctx_id); if(gl) { const p = gl.createProgram(); programs.set(prog_id, p); } }
-webgl|ATTACH_SHADER|attach_shader|string:ctx_id string:prog_id string:shader_id|{ const gl = contexts.get(ctx_id); const p = programs.get(prog_id); const s = shaders.get(shader_id); if(gl && p && s) gl.attachShader(p, s); }
-webgl|LINK_PROGRAM|link_program|string:ctx_id string:prog_id|{ const gl = contexts.get(ctx_id); const p = programs.get(prog_id); if(gl && p) { gl.linkProgram(p); if(!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p)); } }
-webgl|BIND_ATTRIB_LOCATION|bind_attrib_location|string:ctx_id string:prog_id uint32:index string:name|{ const gl = contexts.get(ctx_id); const p = programs.get(prog_id); if(gl && p) gl.bindAttribLocation(p, index, name); }
-webgl|USE_PROGRAM|use_program|string:ctx_id string:prog_id|{ const gl = contexts.get(ctx_id); const p = programs.get(prog_id); if(gl && p) gl.useProgram(p); }
-webgl|CREATE_BUFFER|create_buffer|string:ctx_id string:buf_id|{ const gl = contexts.get(ctx_id); if(gl) { const b = gl.createBuffer(); buffers.set(buf_id, b); } }
-webgl|BIND_BUFFER|bind_buffer|string:ctx_id uint32:target string:buf_id|{ const gl = contexts.get(ctx_id); const b = buffers.get(buf_id); if(gl && b) gl.bindBuffer(target, b); }
-webgl|BUFFER_DATA|buffer_data|string:ctx_id uint32:target uint32:data_ptr uint32:data_len uint32:usage|{ const gl = contexts.get(ctx_id); if(gl) { const data = new Uint8Array(memory.buffer, data_ptr, data_len); gl.bufferData(target, data, usage); } }
-webgl|ENABLE_VERTEX_ATTRIB_ARRAY|enable_vertex_attrib_array|string:ctx_id uint32:index|{ const gl = contexts.get(ctx_id); if(gl) gl.enableVertexAttribArray(index); }
-webgl|ENABLE|enable|string:ctx_id uint32:cap|{ const gl = contexts.get(ctx_id); if(gl) gl.enable(cap); }
-webgl|UNIFORM_1F|uniform_1f|string:ctx_id string:prog_id string:name float32:val|{ const gl = contexts.get(ctx_id); const p = programs.get(prog_id); if(gl && p) { const loc = gl.getUniformLocation(p, name); gl.uniform1f(loc, val); } }
-webgl|VERTEX_ATTRIB_POINTER|vertex_attrib_pointer|string:ctx_id uint32:index int32:size uint32:type uint8:normalized int32:stride int32:offset|{ const gl = contexts.get(ctx_id); if(gl) gl.vertexAttribPointer(index, size, type, normalized !== 0, stride, offset); }
-webgl|DRAW_ARRAYS|draw_arrays|string:ctx_id uint32:mode int32:first int32:count|{ const gl = contexts.get(ctx_id); if(gl) gl.drawArrays(mode, first, count); }
+webgl|CREATE_CONTEXT|create_context|int32:canvas_handle RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const c = canvases.get(canvas_handle) || elements.get(canvas_handle); if(c) { const gl = c.getContext('webgl'); contexts.set(handle, gl); } return handle; }
+webgl|VIEWPORT|viewport|int32:ctx_handle int32:x int32:y int32:width int32:height|{ const gl = contexts.get(ctx_handle); if(gl) gl.viewport(x, y, width, height); }
+webgl|CLEAR_COLOR|clear_color|int32:ctx_handle float32:r float32:g float32:b float32:a|{ const gl = contexts.get(ctx_handle); if(gl) gl.clearColor(r, g, b, a); }
+webgl|CLEAR|clear|int32:ctx_handle uint32:mask|{ const gl = contexts.get(ctx_handle); if(gl) gl.clear(mask); }
+webgl|CREATE_SHADER|create_shader|int32:ctx_handle uint32:type string:source RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const gl = contexts.get(ctx_handle); if(gl) { const s = gl.createShader(type); gl.shaderSource(s, source); gl.compileShader(s); if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); shaders.set(handle, s); } return handle; }
+webgl|CREATE_PROGRAM|create_program|int32:ctx_handle RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const gl = contexts.get(ctx_handle); if(gl) { const p = gl.createProgram(); programs.set(handle, p); } return handle; }
+webgl|ATTACH_SHADER|attach_shader|int32:ctx_handle int32:prog_handle int32:shader_handle|{ const gl = contexts.get(ctx_handle); const p = programs.get(prog_handle); const s = shaders.get(shader_handle); if(gl && p && s) gl.attachShader(p, s); }
+webgl|LINK_PROGRAM|link_program|int32:ctx_handle int32:prog_handle|{ const gl = contexts.get(ctx_handle); const p = programs.get(prog_handle); if(gl && p) { gl.linkProgram(p); if(!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p)); } }
+webgl|BIND_ATTRIB_LOCATION|bind_attrib_location|int32:ctx_handle int32:prog_handle uint32:index string:name|{ const gl = contexts.get(ctx_handle); const p = programs.get(prog_handle); if(gl && p) gl.bindAttribLocation(p, index, name); }
+webgl|USE_PROGRAM|use_program|int32:ctx_handle int32:prog_handle|{ const gl = contexts.get(ctx_handle); const p = programs.get(prog_handle); if(gl && p) gl.useProgram(p); }
+webgl|CREATE_BUFFER|create_buffer|int32:ctx_handle RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const gl = contexts.get(ctx_handle); if(gl) { const b = gl.createBuffer(); buffers.set(handle, b); } return handle; }
+webgl|BIND_BUFFER|bind_buffer|int32:ctx_handle uint32:target int32:buf_handle|{ const gl = contexts.get(ctx_handle); const b = buffers.get(buf_handle); if(gl && b) gl.bindBuffer(target, b); }
+webgl|BUFFER_DATA|buffer_data|int32:ctx_handle uint32:target uint32:data_ptr uint32:data_len uint32:usage|{ const gl = contexts.get(ctx_handle); if(gl) { const data = new Uint8Array(memory.buffer, data_ptr, data_len); gl.bufferData(target, data, usage); } }
+webgl|ENABLE_VERTEX_ATTRIB_ARRAY|enable_vertex_attrib_array|int32:ctx_handle uint32:index|{ const gl = contexts.get(ctx_handle); if(gl) gl.enableVertexAttribArray(index); }
+webgl|ENABLE|enable|int32:ctx_handle uint32:cap|{ const gl = contexts.get(ctx_handle); if(gl) gl.enable(cap); }
+webgl|UNIFORM_1F|uniform_1f|int32:ctx_handle int32:prog_handle string:name float32:val|{ const gl = contexts.get(ctx_handle); const p = programs.get(prog_handle); if(gl && p) { const loc = gl.getUniformLocation(p, name); gl.uniform1f(loc, val); } }
+webgl|VERTEX_ATTRIB_POINTER|vertex_attrib_pointer|int32:ctx_handle uint32:index int32:size uint32:type uint8:normalized int32:stride int32:offset|{ const gl = contexts.get(ctx_handle); if(gl) gl.vertexAttribPointer(index, size, type, normalized !== 0, stride, offset); }
+webgl|DRAW_ARRAYS|draw_arrays|int32:ctx_handle uint32:mode int32:first int32:count|{ const gl = contexts.get(ctx_handle); if(gl) gl.drawArrays(mode, first, count); }

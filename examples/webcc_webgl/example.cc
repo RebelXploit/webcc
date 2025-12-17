@@ -88,6 +88,11 @@ float vertices[] = {
 
 float angle = 0.0f;
 
+// WebGL Handles
+int gl = 0;
+int prog = 0;
+int vbo = 0;
+
 float last_time = 0.0f;
 float fps = 0.0f;
 int hud_canvas = 0;
@@ -107,25 +112,25 @@ extern "C" void update(float time_ms) {
 
     angle += delta_time * 0.5f; // rotate at 0.5 rad/s
 
-    webcc::webgl::clear_color("gl", 0.1f, 0.1f, 0.1f, 1.0f);
-    webcc::webgl::clear("gl", 0x4000 | 0x0100); // COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT
+    webcc::webgl::clear_color(gl, 0.1f, 0.1f, 0.1f, 1.0f);
+    webcc::webgl::clear(gl, 0x4000 | 0x0100); // COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT
 
-    webcc::webgl::use_program("gl", "prog");
+    webcc::webgl::use_program(gl, prog);
     
     // Update uniform
-    webcc::webgl::uniform_1f("gl", "prog", "angle", angle);
+    webcc::webgl::uniform_1f(gl, prog, "angle", angle);
 
-    webcc::webgl::bind_buffer("gl", 0x8892, "vbo");
+    webcc::webgl::bind_buffer(gl, 0x8892, vbo);
     
     // Position
-    webcc::webgl::enable_vertex_attrib_array("gl", 0);
-    webcc::webgl::vertex_attrib_pointer("gl", 0, 3, 0x1406, 0, 6 * sizeof(float), 0);
+    webcc::webgl::enable_vertex_attrib_array(gl, 0);
+    webcc::webgl::vertex_attrib_pointer(gl, 0, 3, 0x1406, 0, 6 * sizeof(float), 0);
 
     // Color
-    webcc::webgl::enable_vertex_attrib_array("gl", 1);
-    webcc::webgl::vertex_attrib_pointer("gl", 1, 3, 0x1406, 0, 6 * sizeof(float), 3 * sizeof(float));
+    webcc::webgl::enable_vertex_attrib_array(gl, 1);
+    webcc::webgl::vertex_attrib_pointer(gl, 1, 3, 0x1406, 0, 6 * sizeof(float), 3 * sizeof(float));
 
-    webcc::webgl::draw_arrays("gl", 0x0004, 0, 36); // GL_TRIANGLES
+    webcc::webgl::draw_arrays(gl, 0x0004, 0, 36); // GL_TRIANGLES
 
     // Draw FPS text via Canvas 2D overlay
     webcc::canvas::clear_rect(hud_canvas, 0, 0, 200, 40);
@@ -172,27 +177,28 @@ int main() {
     webcc::dom::append_child(game_container, gl_canvas);
 
     // Initialize WebGL
-    webcc::webgl::create_context("gl", gl_canvas);
-    webcc::webgl::enable("gl", 0x0B71); // GL_DEPTH_TEST
+    gl = webcc::webgl::create_context(gl_canvas);
+    webcc::webgl::viewport(gl, 0, 0, 600, 600);
+    webcc::webgl::enable(gl, 0x0B71); // GL_DEPTH_TEST
 
     // Create Shaders
-    webcc::webgl::create_shader("gl", "vs", 0x8B31, vs_source); // GL_VERTEX_SHADER
-    webcc::webgl::create_shader("gl", "fs", 0x8B30, fs_source); // GL_FRAGMENT_SHADER
+    int vs = webcc::webgl::create_shader(gl, 0x8B31, vs_source); // GL_VERTEX_SHADER
+    int fs = webcc::webgl::create_shader(gl, 0x8B30, fs_source); // GL_FRAGMENT_SHADER
     
     // Create Program
-    webcc::webgl::create_program("gl", "prog");
-    webcc::webgl::attach_shader("gl", "prog", "vs");
-    webcc::webgl::attach_shader("gl", "prog", "fs");
-    webcc::webgl::bind_attrib_location("gl", "prog", 0, "position");
-    webcc::webgl::bind_attrib_location("gl", "prog", 1, "color");
-    webcc::webgl::link_program("gl", "prog");
+    prog = webcc::webgl::create_program(gl);
+    webcc::webgl::attach_shader(gl, prog, vs);
+    webcc::webgl::attach_shader(gl, prog, fs);
+    webcc::webgl::bind_attrib_location(gl, prog, 0, "position");
+    webcc::webgl::bind_attrib_location(gl, prog, 1, "color");
+    webcc::webgl::link_program(gl, prog);
     
     // Create Buffer
-    webcc::webgl::create_buffer("gl", "vbo");
-    webcc::webgl::bind_buffer("gl", 0x8892, "vbo"); // GL_ARRAY_BUFFER
+    vbo = webcc::webgl::create_buffer(gl);
+    webcc::webgl::bind_buffer(gl, 0x8892, vbo); // GL_ARRAY_BUFFER
     
     // Upload Data
-    webcc::webgl::buffer_data("gl", 0x8892, (uint32_t)vertices, sizeof(vertices), 0x88E4); // GL_STATIC_DRAW
+    webcc::webgl::buffer_data(gl, 0x8892, (uint32_t)vertices, sizeof(vertices), 0x88E4); // GL_STATIC_DRAW
 
     webcc::system::set_main_loop("update");
     

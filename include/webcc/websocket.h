@@ -8,21 +8,20 @@ namespace webcc::websocket {
         OP_CLOSE = 0x44
     };
 
-    inline void create(const char* id, const char* url){
-        push_command((uint8_t)OP_CREATE);
-        webcc::CommandBuffer::push_string(id, strlen(id));
-        webcc::CommandBuffer::push_string(url, strlen(url));
+    extern "C" int32_t webcc_websocket_create(const char* url, uint32_t url_len);
+    inline int32_t create(const char* url){
+        return webcc_websocket_create(url, strlen(url));
     }
 
-    inline void send(const char* id, const char* msg){
+    inline void send(int32_t handle, const char* msg){
         push_command((uint8_t)OP_SEND);
-        webcc::CommandBuffer::push_string(id, strlen(id));
+        push_data<int32_t>(handle);
         webcc::CommandBuffer::push_string(msg, strlen(msg));
     }
 
-    inline void close(const char* id){
+    inline void close(int32_t handle){
         push_command((uint8_t)OP_CLOSE);
-        webcc::CommandBuffer::push_string(id, strlen(id));
+        push_data<int32_t>(handle);
     }
 
 } // namespace webcc::websocket

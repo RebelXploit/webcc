@@ -35,7 +35,7 @@ int main() {
     webcc::dom::append_child(body, canvas);
 
     // Draw a blue **background**
-    webcc::canvas::**set_fill_style**(canvas, 52, 152, 219); // RGB
+    webcc::canvas::set_fill_style(canvas, 52, 152, 219); // RGB
     webcc::canvas::fill_rect(canvas, 0, 0, 800, 600);
 
     // Draw a yellow circle in the center

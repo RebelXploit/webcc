@@ -668,7 +668,8 @@ static bool contains_whole_word(const std::string &text, const std::string &word
 static std::set<std::string> get_maps_from_action(const std::string &action)
 {
     std::set<std::string> maps;
-    std::vector<std::string> possible_maps = {"elements", "canvases", "contexts_2d", "audios", "websockets", "images", "contexts", "shaders", "programs", "buffers", "textures", "uniforms"};
+    std::vector<std::string> possible_maps = {"elements", "contexts", "audios", "websockets", "images", "webgl_shaders", "webgl_programs", "webgl_buffers", "textures", "webgl_uniforms",
+                                              "webgpu_adapters", "webgpu_devices", "webgpu_queues", "webgpu_shaders", "webgpu_encoders", "webgpu_views", "webgpu_passes", "webgpu_buffers", "webgpu_pipelines"};
     for (const auto &map : possible_maps)
     {
         if (contains_whole_word(action, map))
@@ -829,28 +830,46 @@ int main(int argc, char **argv)
     // Emit resource maps (e.g., for DOM elements, canvases) if they are used.
     if (used_maps.count("elements"))
         js_builder << "    const elements = []; elements[0] = document.body;\n";
-    if (used_maps.count("canvases"))
-        js_builder << "    const canvases = [];\n";
-    if (used_maps.count("contexts_2d"))
-        js_builder << "    const contexts_2d = [];\n";
+    if (used_maps.count("contexts"))
+        js_builder << "    const contexts = [];\n";
     if (used_maps.count("audios"))
         js_builder << "    const audios = [];\n";
     if (used_maps.count("websockets"))
         js_builder << "    const websockets = [];\n";
     if (used_maps.count("images"))
         js_builder << "    const images = [];\n";
-    if (used_maps.count("contexts"))
-        js_builder << "    const contexts = [];\n";
-    if (used_maps.count("shaders"))
-        js_builder << "    const shaders = [];\n";
-    if (used_maps.count("programs"))
-        js_builder << "    const programs = [];\n";
-    if (used_maps.count("buffers"))
-        js_builder << "    const buffers = [];\n";
+    if (used_maps.count("webgl_contexts"))
+        js_builder << "    const webgl_contexts = [];\n";
+    if (used_maps.count("webgl_shaders"))
+        js_builder << "    const webgl_shaders = [];\n";
+    if (used_maps.count("webgl_programs"))
+        js_builder << "    const webgl_programs = [];\n";
+    if (used_maps.count("webgl_buffers"))
+        js_builder << "    const webgl_buffers = [];\n";
     if (used_maps.count("textures"))
         js_builder << "    const textures = [];\n";
-    if (used_maps.count("uniforms"))
-        js_builder << "    const uniforms = [];\n";
+    if (used_maps.count("webgl_uniforms"))
+        js_builder << "    const webgl_uniforms = [];\n";
+    if (used_maps.count("webgpu_adapters"))
+        js_builder << "    const webgpu_adapters = [];\n";
+    if (used_maps.count("webgpu_devices"))
+        js_builder << "    const webgpu_devices = [];\n";
+    if (used_maps.count("webgpu_queues"))
+        js_builder << "    const webgpu_queues = [];\n";
+    if (used_maps.count("webgpu_shaders"))
+        js_builder << "    const webgpu_shaders = [];\n";
+    if (used_maps.count("webgpu_encoders"))
+        js_builder << "    const webgpu_encoders = [];\n";
+    if (used_maps.count("webgpu_contexts"))
+        js_builder << "    const webgpu_contexts = [];\n";
+    if (used_maps.count("webgpu_views"))
+        js_builder << "    const webgpu_views = [];\n";
+    if (used_maps.count("webgpu_passes"))
+        js_builder << "    const webgpu_passes = [];\n";
+    if (used_maps.count("webgpu_buffers"))
+        js_builder << "    const webgpu_buffers = [];\n";
+    if (used_maps.count("webgpu_pipelines"))
+        js_builder << "    const webgpu_pipelines = [];\n";
 
     // Assemble the final JavaScript file.
     std::stringstream final_js;

@@ -4,7 +4,6 @@
 
 namespace webcc::webgl {
     enum OpCode {
-        OP_CREATE_CONTEXT = 0x46,
         OP_VIEWPORT = 0x47,
         OP_CLEAR_COLOR = 0x48,
         OP_CLEAR = 0x49,
@@ -24,12 +23,6 @@ namespace webcc::webgl {
         OP_VERTEX_ATTRIB_POINTER = 0x57,
         OP_DRAW_ARRAYS = 0x58
     };
-
-    extern "C" int32_t webcc_webgl_create_context(int32_t canvas_handle);
-    inline int32_t create_context(int32_t canvas_handle){
-        ::webcc::flush();
-        return webcc_webgl_create_context(canvas_handle);
-    }
 
     inline void viewport(int32_t ctx_handle, int32_t x, int32_t y, int32_t width, int32_t height){
         push_command((uint32_t)OP_VIEWPORT);

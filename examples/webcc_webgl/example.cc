@@ -97,6 +97,7 @@ int angle_loc = 0;
 float last_time = 0.0f;
 float fps = 0.0f;
 int hud_canvas = 0;
+int hud_ctx = 0;
 
 extern "C" void update(float time_ms) {
    // Calculate Delta Time (in seconds)
@@ -134,10 +135,10 @@ extern "C" void update(float time_ms) {
     webcc::webgl::draw_arrays(gl, 0x0004, 0, 36); // GL_TRIANGLES
 
     // Draw FPS text via Canvas 2D overlay
-    webcc::canvas::clear_rect(hud_canvas, 0, 0, 200, 40);
-    webcc::canvas::set_font(hud_canvas, "20px Arial");
-    webcc::canvas::set_fill_style(hud_canvas, 0, 255, 0);
-    webcc::canvas::fill_text_f(hud_canvas, "FPS: %f", fps, 10, 25);
+    webcc::canvas::clear_rect(hud_ctx, 0, 0, 200, 40);
+    webcc::canvas::set_font(hud_ctx, "20px Arial");
+    webcc::canvas::set_fill_style(hud_ctx, 0, 255, 0);
+    webcc::canvas::fill_text_f(hud_ctx, "FPS: %f", fps, 10, 25);
 
     webcc::flush();
 }
@@ -169,6 +170,7 @@ int main() {
 
     // HUD canvas overlay for FPS (like canvas example)
     hud_canvas = webcc::canvas::create_canvas("hud-canvas", 800, 600);
+    hud_ctx = webcc::canvas::get_context(hud_canvas, "2d");
     webcc::dom::set_attribute(hud_canvas, "style", "position: absolute; left: 0; top: 0; pointer-events: none;");
     webcc::dom::append_child(game_container, hud_canvas);
 
@@ -178,7 +180,7 @@ int main() {
     webcc::dom::append_child(game_container, gl_canvas);
 
     // Initialize WebGL
-    gl = webcc::webgl::create_context(gl_canvas);
+    gl = webcc::canvas::get_context(gl_canvas, "webgl");
     webcc::webgl::viewport(gl, 0, 0, 600, 600);
     webcc::webgl::enable(gl, 0x0B71); // GL_DEPTH_TEST
 

@@ -156,7 +156,7 @@ To maximize performance, WebCC uses **integer handles** to reference resources (
 
 ### Easy Extensibility
 The entire API surface is defined in a single configuration file: `commands.def`.
-- **Format**: `NAMESPACE|COMMAND_NAME|func_name|ARG_TYPES|JS_IMPLEMENTATION`
+- **Format**: `NAMESPACE|TYPE|NAME|FUNC_NAME|ARG_TYPES|JS_ACTION`
 - **Generation**: The `webcc` tool parses this file to automatically generate:
   1.  **C++ Headers**: Type-safe function prototypes (e.g., `webcc/canvas.h`).
   2.  **JavaScript Runtime**: The switch-case logic to execute commands in `app.js`.
@@ -165,7 +165,7 @@ To add a new Web API feature, simply add a line to `commands.def` and run `./web
 
 ## Contributing ✅
 
-- **Contributions welcome.** If you'd like to add a command, update `commands.def` following the file format and run `./build.sh` to regenerate headers and `app.js`.
+- **Contributions welcome.** If you'd like to add a command, update `commands.def` following the file format and run `./webcc --headers` to regenerate headers.
 - **Small PRs are best.** Include a short example (or a unit test) demonstrating the new API and a brief description in the PR.
 - **Tips:** Prefer returning integer handles for created resources (use `RET:int32`), register DOM/audio/image objects in the `elements` map when appropriate, and ensure your JS implementation is robust (checks for missing handles, etc.).
 ****

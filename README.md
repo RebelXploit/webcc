@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo.png" alt="WebCC Logo" width="250">
+  <img src="docs/images/logo.png" alt="WebCC Logo" width="400">
 </p>
 
 # WebCC

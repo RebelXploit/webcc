@@ -32,7 +32,7 @@ float fps = 0.0f;
 int hud_canvas = 0;
 int hud_ctx = 0;
 
-extern "C" void update(float time_ms) {
+void update(float time_ms) {
     // Calculate Delta Time (in seconds)
     float delta_time = (time_ms - last_time) / 1000.0f;
     last_time = time_ms;
@@ -156,7 +156,7 @@ int main() {
     // Start WebGPU initialization
     webcc::wgpu::request_adapter();
 
-    webcc::system::set_main_loop("update");
+    webcc::system::set_main_loop(update);
 
     webcc::flush();
     

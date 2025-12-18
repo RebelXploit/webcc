@@ -49,7 +49,7 @@ void make_width_style(int percent, char* buf) {
     buf[i] = '\0';
 }
 
-extern "C" void update(float time_ms) {
+void update(float time_ms) {
     // Poll events
     uint8_t opcode;
     const uint8_t* data;
@@ -142,7 +142,7 @@ int main() {
 
     webcc::input::init_mouse(play_btn);
     
-    webcc::system::set_main_loop("update");
+    webcc::system::set_main_loop(update);
 
     webcc::flush();
     return 0;

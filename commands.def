@@ -74,7 +74,7 @@ input|command|EXIT_POINTER_LOCK|exit_pointer_lock||{ document.exitPointerLock();
 system|command|LOG|log|string:msg|{ console.log(msg); }
 system|command|WARN|warn|string:msg|{ console.warn(msg); }
 system|command|ERROR|error|string:msg|{ console.error(msg); }
-system|command|SET_MAIN_LOOP|set_main_loop|string:func_name|{ const fn = mod.instance.exports[func_name]; if(!fn){ console.error('set_main_loop: export not found', func_name); continue; } const loop = (t) => { fn(t); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+system|command|SET_MAIN_LOOP|set_main_loop|func_ptr:func|{ const fn = table.get(func); if(!fn){ console.error('set_main_loop: function not found in table', func); continue; } const loop = (t) => { fn(t); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 system|command|SET_TITLE|set_title|string:title|{ document.title = title; }
 system|command|RELOAD|reload||{ location.reload(); }
 system|command|OPEN_URL|open_url|string:url|{ window.open(url, '_blank'); }

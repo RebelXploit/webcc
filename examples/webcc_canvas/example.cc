@@ -19,7 +19,7 @@ int hud_ctx = 0;
 float last_time = 0.0f;
 float fps = 0.0f;
 
-extern "C" void update(float time_ms) {
+void update(float time_ms) {
     // Poll events
     uint8_t opcode;
     const uint8_t* data;
@@ -134,7 +134,7 @@ int main() {
     webcc::input::init_mouse(demo_canvas);
 
     webcc::system::log("Starting demo loop...");
-    webcc::system::set_main_loop("update");
+    webcc::system::set_main_loop(update);
     
     webcc::flush();
     return 0;

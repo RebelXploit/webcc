@@ -70,69 +70,85 @@ void get_random_color(char* buf) {
     buf[i] = '\0';
 }
 
-extern "C" void webcc_on_mousedown(int button, int x, int y) {
-    item_count++;
-    last_clicked_x = x;
-    last_clicked_y = y;
-    
-    char num[16];
-    int i;
-    
-    int_to_str(item_count, num);
-    
-    int item = webcc::dom::create_element("div");
-    
-    // Build text: "Box #X"
-    char text[64];
-    i = 0;
-    const char* text_prefix = "Box #";
-    for (int k = 0; text_prefix[k]; ++k) text[i++] = text_prefix[k];
-    for (int k = 0; num[k]; ++k) text[i++] = num[k];
-    text[i] = '\0';
-    
-    webcc::dom::set_inner_text(item, text);
-    
-    // Generate random color
-    char color[32];
-    get_random_color(color);
-    
-    // Build style string with random background color
-    char style[256];
-    i = 0;
-    const char* style_prefix = "padding: 15px 20px; margin: 5px; border-radius: 8px; color: white; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; cursor: pointer; background: ";
-    for (int k = 0; style_prefix[k]; ++k) style[i++] = style_prefix[k];
-    for (int k = 0; color[k]; ++k) style[i++] = color[k];
-    style[i++] = ';';
-    style[i] = '\0';
-    
-    webcc::dom::set_attribute(item, "style", style);
-    webcc::dom::append_child(box_container, item);
+void update(float time_ms) {
+    // Poll events
+    uint8_t opcode;
+    const uint8_t* data;
+    uint32_t len;
+    while (webcc::poll_event(opcode, &data, len)) {
+        switch (opcode) {
+            case webcc::input::EVENT_MOUSE_DOWN: {
+                int32_t args[3];
+                __builtin_memcpy(args, data, 12);
+                int button = args[0];
+                int x = args[1];
+                int y = args[2];
 
-    // Update counter
-    int_to_str(item_count, num);
-    char counter_text[64];
-    i = 0;
-    const char* ct = "Total Boxes: ";
-    for(int k=0; ct[k]; ++k) counter_text[i++] = ct[k];
-    for(int k=0; num[k]; ++k) counter_text[i++] = num[k];
-    counter_text[i] = '\0';
-    webcc::dom::set_inner_text(counter_el, counter_text);
+                item_count++;
+                last_clicked_x = x;
+                last_clicked_y = y;
+                
+                char num[16];
+                int i;
+                
+                int_to_str(item_count, num);
+                
+                int item = webcc::dom::create_element("div");
+                
+                // Build text: "Box #X"
+                char text[64];
+                i = 0;
+                const char* text_prefix = "Box #";
+                for (int k = 0; text_prefix[k]; ++k) text[i++] = text_prefix[k];
+                for (int k = 0; num[k]; ++k) text[i++] = num[k];
+                text[i] = '\0';
+                
+                webcc::dom::set_inner_text(item, text);
+                
+                // Generate random color
+                char color[32];
+                get_random_color(color);
+                
+                // Build style string with random background color
+                char style[256];
+                i = 0;
+                const char* style_prefix = "padding: 15px 20px; margin: 5px; border-radius: 8px; color: white; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; cursor: pointer; background: ";
+                for (int k = 0; style_prefix[k]; ++k) style[i++] = style_prefix[k];
+                for (int k = 0; color[k]; ++k) style[i++] = color[k];
+                style[i++] = ';';
+                style[i] = '\0';
+                
+                webcc::dom::set_attribute(item, "style", style);
+                webcc::dom::append_child(box_container, item);
 
-    // Update click position
-    char click_text[64];
-    i = 0;
-    const char* cl = "Last Click: (";
-    for(int k=0; cl[k]; ++k) click_text[i++] = cl[k];
-    int_to_str(last_clicked_x, num);
-    for(int k=0; num[k]; ++k) click_text[i++] = num[k];
-    click_text[i++] = ',';
-    click_text[i++] = ' ';
-    int_to_str(last_clicked_y, num);
-    for(int k=0; num[k]; ++k) click_text[i++] = num[k];
-    click_text[i++] = ')';
-    click_text[i] = '\0';
-    webcc::dom::set_inner_text(click_pos_el, click_text);
+                // Update counter
+                int_to_str(item_count, num);
+                char counter_text[64];
+                i = 0;
+                const char* ct = "Total Boxes: ";
+                for(int k=0; ct[k]; ++k) counter_text[i++] = ct[k];
+                for(int k=0; num[k]; ++k) counter_text[i++] = num[k];
+                counter_text[i] = '\0';
+                webcc::dom::set_inner_text(counter_el, counter_text);
 
+                // Update click position
+                char click_text[64];
+                i = 0;
+                const char* cl = "Last Click: (";
+                for(int k=0; cl[k]; ++k) click_text[i++] = cl[k];
+                int_to_str(last_clicked_x, num);
+                for(int k=0; num[k]; ++k) click_text[i++] = num[k];
+                click_text[i++] = ',';
+                click_text[i++] = ' ';
+                int_to_str(last_clicked_y, num);
+                for(int k=0; num[k]; ++k) click_text[i++] = num[k];
+                click_text[i++] = ')';
+                click_text[i] = '\0';
+                webcc::dom::set_inner_text(click_pos_el, click_text);
+                break;
+            }
+        }
+    }
     webcc::flush();
 }
 
@@ -187,9 +203,8 @@ int main() {
 
     webcc::input::init_mouse(add_btn);
 
+    webcc::system::set_main_loop(update);
+
     webcc::flush();
     return 0;
 }
-
-extern "C" void webcc_on_mouseup(int button, int x, int y) {}
-extern "C" void webcc_on_mousemove(int x, int y) {}

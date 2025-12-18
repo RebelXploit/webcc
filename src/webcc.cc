@@ -82,7 +82,7 @@ const std::string JS_INIT_TAIL = R"(
     });
 
     // Get exports from WASM
-    const { memory, main } = mod.instance.exports;
+    const { memory, main, __indirect_function_table: table } = mod.instance.exports;
 )";
 
 // JS code for the 'flush' function, which processes commands from C++.
@@ -348,6 +348,11 @@ static std::string gen_js_case(const CommandDef &c)
             ss << "                if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "'); break; }\n";
             ss << "                const " << varName << " = f32[pos >> 2]; pos += 4;\n";
         }
+        else if (p.type == "func_ptr")
+        {
+            ss << "                if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "'); break; }\n";
+            ss << "                const " << varName << " = i32[pos >> 2]; pos += 4;\n";
+        }
         else if (p.type == "string")
         {
             ss << "                if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "_tag'); break; }\n";
@@ -595,6 +600,8 @@ static void emit_headers(const Defs &defs)
                     out << "float " << name;
                 else if (p.type == "string")
                     out << "const char* " << name;
+                else if (p.type == "func_ptr")
+                    out << "void (*" << name << ")(float)";
                 else
                     out << "/*unknown*/ void* " << name;
             }
@@ -614,6 +621,8 @@ static void emit_headers(const Defs &defs)
                     out << "        push_data<float>(" << name << ");\n";
                 else if (p.type == "string")
                     out << "        webcc::CommandBuffer::push_string(" << name << ", strlen(" << name << "));\n";
+                else if (p.type == "func_ptr")
+                    out << "        push_data<uint32_t>((uint32_t)(uintptr_t)" << name << ");\n";
                 else
                     out << "        // unknown type: " << p.type << "\n";
             }

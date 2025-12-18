@@ -99,7 +99,7 @@ float fps = 0.0f;
 int hud_canvas = 0;
 int hud_ctx = 0;
 
-extern "C" void update(float time_ms) {
+void update(float time_ms) {
    // Calculate Delta Time (in seconds)
     float delta_time = (time_ms - last_time) / 1000.0f;
     last_time = time_ms;
@@ -208,7 +208,7 @@ int main() {
     // Upload Data
     webcc::webgl::buffer_data(gl, 0x8892, (uint32_t)vertices, sizeof(vertices), 0x88E4); // GL_STATIC_DRAW
 
-    webcc::system::set_main_loop("update");
+    webcc::system::set_main_loop(update);
     
     webcc::flush();
     return 0;

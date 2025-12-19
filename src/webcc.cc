@@ -10,6 +10,13 @@
 #include <unistd.h>
 #include <limits.h>
 
+#if __has_include("webcc_schema.h")
+#include "webcc_schema.h"
+#define WEBCC_HAS_SCHEMA 1
+#else
+#define WEBCC_HAS_SCHEMA 0
+#endif
+
 // Small helpers used by the CLI to read and write files.
 
 // Reads the entire contents of a file into a string.
@@ -24,20 +31,24 @@ static std::string read_file(const std::string &path)
 }
 
 // Gets the full path to the currently running executable.
-static std::string get_executable_path() {
+static std::string get_executable_path()
+{
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    if (count != -1) {
+    if (count != -1)
+    {
         return std::string(result, count);
     }
     return "";
 }
 
 // Gets the directory where the currently running executable is located.
-static std::string get_executable_dir() {
+static std::string get_executable_dir()
+{
     std::string path = get_executable_path();
     size_t pos = path.find_last_of("/");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
+    {
         return path.substr(0, pos);
     }
     return ".";
@@ -140,7 +151,7 @@ run();
 // 2. The Feature Database
 // -----------------------------------------------------------------------------
 
-// The Feature Database is driven by `commands.def`.
+// The Feature Database is driven by `schema.def`.
 // It defines the available commands and events that can be used to communicate
 // between C++ and JavaScript.
 
@@ -151,7 +162,7 @@ struct Param
     std::string name; // optional; if empty we'll generate argN
 };
 
-// Represents a command definition from `commands.def`.
+// Represents a command definition from `schema.def`.
 struct CommandDef
 {
     std::string ns;   // Namespace
@@ -163,7 +174,7 @@ struct CommandDef
     std::string return_type;   // Optional return type
 };
 
-// Represents an event definition from `commands.def`.
+// Represents an event definition from `schema.def`.
 struct EventDef
 {
     std::string ns;
@@ -179,9 +190,9 @@ struct Defs
     std::vector<EventDef> events;
 };
 
-// Loads and parses the command and event definitions from a file (e.g., commands.def).
+// Loads and parses the command and event definitions from a file (e.g., schema.def).
 // The file format is a pipe-separated list of fields per line.
-// For commands: NAMESPACE|[command]|NAME|FUNC_NAME|TYPES|ACTION
+// For commands: NAMESPACE|command|NAME|FUNC_NAME|TYPES|ACTION
 // For events:   NAMESPACE|event|NAME|ARGS
 static Defs load_defs(const std::string &path)
 {
@@ -323,6 +334,52 @@ static Defs load_defs(const std::string &path)
     return out;
 }
 
+#if WEBCC_HAS_SCHEMA
+static Defs load_defs_from_schema()
+{
+    std::cout << "[WebCC] Loading definitions from compiled-in schema..." << std::endl;
+    Defs out;
+
+    for (const auto *c = webcc::SCHEMA_COMMANDS; c->ns != nullptr; ++c)
+    {
+        CommandDef cmd;
+        cmd.ns = c->ns;
+        cmd.name = c->name;
+        cmd.opcode = c->opcode;
+        cmd.func_name = c->func_name;
+        cmd.return_type = c->return_type;
+        cmd.action = c->action;
+        for (int i = 0; i < c->num_params; ++i)
+        {
+            Param p;
+            p.type = c->params[i].type;
+            p.name = c->params[i].name;
+            cmd.params.push_back(p);
+        }
+        out.commands.push_back(cmd);
+    }
+
+    for (const auto *e = webcc::SCHEMA_EVENTS; e->ns != nullptr; ++e)
+    {
+        EventDef evt;
+        evt.ns = e->ns;
+        evt.name = e->name;
+        evt.opcode = e->opcode;
+        for (int i = 0; i < e->num_params; ++i)
+        {
+            Param p;
+            p.type = e->params[i].type;
+            p.name = e->params[i].name;
+            evt.params.push_back(p);
+        }
+        out.events.push_back(evt);
+    }
+
+    std::cout << "[WebCC] Loaded " << out.commands.size() << " commands and " << out.events.size() << " events." << std::endl;
+    return out;
+}
+#endif
+
 // Generates the JavaScript 'case' block for a single command's opcode.
 static std::string gen_js_case(const CommandDef &c)
 {
@@ -401,7 +458,17 @@ static void emit_schema_header(const Defs &defs)
     out << "    const char* ns;\n";
     out << "    const char* name;\n";
     out << "    uint8_t opcode;\n";
+    out << "    const char* func_name;\n";
+    out << "    const char* return_type;\n";
     out << "    const char* action;\n";
+    out << "    int num_params;\n";
+    out << "    SchemaParam params[8];\n";
+    out << "};\n\n";
+
+    out << "struct SchemaEvent {\n";
+    out << "    const char* ns;\n";
+    out << "    const char* name;\n";
+    out << "    uint8_t opcode;\n";
     out << "    int num_params;\n";
     out << "    SchemaParam params[8];\n";
     out << "};\n\n";
@@ -410,23 +477,42 @@ static void emit_schema_header(const Defs &defs)
     for (const auto &d : defs.commands)
     {
         out << "    { \"" << d.ns << "\", \"" << d.name << "\", " << (int)d.opcode << ", ";
+        out << "\"" << d.func_name << "\", \"" << d.return_type << "\", ";
         out << "R\"JS_ACTION(" << d.action << ")JS_ACTION\", ";
         out << d.params.size() << ", {";
         for (size_t i = 0; i < d.params.size(); ++i)
         {
-            if (i > 0) out << ", ";
+            if (i > 0)
+                out << ", ";
             std::string name = d.params[i].name.empty() ? ("arg" + std::to_string(i)) : d.params[i].name;
             out << "{ \"" << d.params[i].type << "\", \"" << name << "\" }";
         }
         out << "} },\n";
     }
-    out << "    { nullptr, nullptr, 0, nullptr, 0, {} }\n";
+    out << "    { nullptr, nullptr, 0, nullptr, nullptr, nullptr, 0, {} }\n";
+    out << "};\n\n";
+
+    out << "static const SchemaEvent SCHEMA_EVENTS[] = {\n";
+    for (const auto &d : defs.events)
+    {
+        out << "    { \"" << d.ns << "\", \"" << d.name << "\", " << (int)d.opcode << ", ";
+        out << d.params.size() << ", {";
+        for (size_t i = 0; i < d.params.size(); ++i)
+        {
+            if (i > 0)
+                out << ", ";
+            std::string name = d.params[i].name.empty() ? ("arg" + std::to_string(i)) : d.params[i].name;
+            out << "{ \"" << d.params[i].type << "\", \"" << name << "\" }";
+        }
+        out << "} },\n";
+    }
+    out << "    { nullptr, nullptr, 0, 0, {} }\n";
     out << "};\n\n";
 
     out << "} // namespace webcc\n";
 
-    write_file("include/webcc_schema.h", out.str());
-    std::cout << "[WebCC] Emitted include/webcc_schema.h" << std::endl;
+    write_file("src/webcc_schema.h", out.str());
+    std::cout << "[WebCC] Emitted src/webcc_schema.h" << std::endl;
 }
 
 // Generates the C++ header files for each namespace (e.g., webcc/dom.h).
@@ -691,7 +777,7 @@ static std::set<std::string> get_maps_from_action(const std::string &action)
 
 int main(int argc, char **argv)
 {
-    std::string defs_path = "commands.def";
+    std::string defs_path = "schema.def";
     std::vector<std::string> input_files;
     bool generate_headers = false;
 
@@ -699,21 +785,13 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
-        if (arg == "--defs")
+        if (arg == "--headers")
         {
-            if (i + 1 < argc)
+            generate_headers = true;
+            if (i + 1 < argc && argv[i + 1][0] != '-')
             {
                 defs_path = argv[++i];
             }
-            else
-            {
-                std::cerr << "[WebCC] Error: --defs requires a path argument." << std::endl;
-                return 1;
-            }
-        }
-        else if (arg == "--headers")
-        {
-            generate_headers = true;
         }
         else
         {
@@ -722,14 +800,21 @@ int main(int argc, char **argv)
     }
 
     // Load the command and event definitions.
-    auto defs = load_defs(defs_path);
+    Defs defs;
 
     // If 'headers' command is given, generate headers and exit.
     if (generate_headers)
     {
+        defs = load_defs(defs_path);
         emit_headers(defs);
         return 0;
     }
+
+#if WEBCC_HAS_SCHEMA
+    defs = load_defs_from_schema();
+#else
+    defs = load_defs(defs_path);
+#endif
 
     if (input_files.empty())
     {
@@ -760,7 +845,7 @@ int main(int argc, char **argv)
     std::cout << "[WebCC] Scanning source files for features..." << std::endl;
     // Load command defs and emit C++ helpers so `webcc::canvas::*` functions
     // are kept in sync with the command definitions.
-    // auto defs = load_defs("commands.def"); // Already loaded
+    // auto defs = load_defs("schema.def"); // Already loaded
     // emit_headers(defs); // Not needed during build, headers should be pre-generated or included
 
     std::set<std::string> used_namespaces;
@@ -900,7 +985,8 @@ int main(int argc, char **argv)
     // Generate push_event helpers in JS for each event type.
     for (const auto &d : defs.events)
     {
-        if (used_namespaces.find(d.ns) == used_namespaces.end()) continue;
+        if (used_namespaces.find(d.ns) == used_namespaces.end())
+            continue;
 
         final_js << "    function push_event_" << d.ns << "_" << d.name << "(";
         for (size_t i = 0; i < d.params.size(); ++i)

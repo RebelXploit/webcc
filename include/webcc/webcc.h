@@ -43,4 +43,9 @@ namespace webcc{
     inline bool poll_event(uint8_t& opcode, const uint8_t** data_ptr, uint32_t& data_len) {
         return next_event(opcode, data_ptr, data_len);
     }
+
+    template <typename T>
+    inline T parse_event(const uint8_t* data, uint32_t len) {
+        return T::parse(data, len);
+    }
 }

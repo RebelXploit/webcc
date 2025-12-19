@@ -27,10 +27,9 @@ void update(float time_ms) {
     while (webcc::poll_event(opcode, &data, len)) {
         switch (opcode) {
             case webcc::input::EVENT_MOUSE_MOVE: {
-                int32_t args[2];
-                __builtin_memcpy(args, data, 8);
-                mouse_x = (float)args[0];
-                mouse_y = (float)args[1];
+                auto event = webcc::parse_event<webcc::input::MouseMoveEvent>(data, len);
+                mouse_x = (float)event.x;
+                mouse_y = (float)event.y;
                 break;
             }
             case webcc::input::EVENT_MOUSE_DOWN: {

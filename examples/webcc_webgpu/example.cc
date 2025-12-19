@@ -51,8 +51,8 @@ void update(float time_ms) {
     while (webcc::poll_event(opcode, &data, len)) {
         switch (opcode) {
             case webcc::wgpu::EVENT_ADAPTER_READY: {
-                int32_t handle;
-                __builtin_memcpy(&handle, data, 4);
+                auto event = webcc::parse_event<webcc::wgpu::AdapterReadyEvent>(data, len);
+                int32_t handle = event.handle;
                 
                 if (handle == 0) {
                     webcc::system::error("WebGPU adapter request failed.");
@@ -68,8 +68,8 @@ void update(float time_ms) {
                 break;
             }
             case webcc::wgpu::EVENT_DEVICE_READY: {
-                int32_t handle;
-                __builtin_memcpy(&handle, data, 4);
+                auto event = webcc::parse_event<webcc::wgpu::DeviceReadyEvent>(data, len);
+                int32_t handle = event.handle;
                 
                 webcc::system::log("Device ready!");
                 device = handle;

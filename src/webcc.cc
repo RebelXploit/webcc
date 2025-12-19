@@ -9,6 +9,7 @@
 #include <set>
 #include <unistd.h>
 #include <limits.h>
+#include <cctype>
 
 #if __has_include("webcc_schema.h")
 #include "webcc_schema.h"
@@ -588,6 +589,66 @@ static void emit_headers(const Defs &defs)
                 first = false;
             }
             out << "\n    };\n\n";
+
+            // Generate Event Structs
+            for (const auto &d : defs.events)
+            {
+                if (d.ns != ns)
+                    continue;
+
+                std::string struct_name;
+                bool next_upper = true;
+                for(char c : d.name) {
+                    if(c == '_') {
+                        next_upper = true;
+                    } else {
+                        if(next_upper) {
+                            struct_name += toupper(c);
+                            next_upper = false;
+                        } else {
+                            struct_name += tolower(c);
+                        }
+                    }
+                }
+                struct_name += "Event";
+
+                out << "    struct " << struct_name << " {\n";
+                for (const auto &p : d.params)
+                {
+                    std::string type = p.type;
+                    if (type == "int32") type = "int32_t";
+                    else if (type == "uint32") type = "uint32_t";
+                    else if (type == "float32") type = "float";
+                    else if (type == "uint8") type = "uint8_t";
+                    else if (type == "string") type = "const char*";
+                    
+                    std::string name = p.name;
+                    out << "        " << type << " " << name << ";\n";
+                }
+
+                out << "\n        static " << struct_name << " parse(const uint8_t* data, uint32_t len) {\n";
+                out << "            " << struct_name << " res;\n";
+                out << "            uint32_t offset = 0;\n";
+                for (const auto &p : d.params) {
+                    if (p.type == "int32") {
+                        out << "            res." << p.name << " = *(int32_t*)(data + offset); offset += 4;\n";
+                    } else if (p.type == "uint32") {
+                        out << "            res." << p.name << " = *(uint32_t*)(data + offset); offset += 4;\n";
+                    } else if (p.type == "float32") {
+                        out << "            res." << p.name << " = *(float*)(data + offset); offset += 4;\n";
+                    } else if (p.type == "uint8") {
+                        out << "            res." << p.name << " = *(uint8_t*)(data + offset); offset += 1;\n";
+                    } else if (p.type == "string") {
+                        out << "            uint16_t " << p.name << "_len = *(uint16_t*)(data + offset); offset += 2;\n";
+                        out << "            res." << p.name << " = (const char*)(data + offset);\n";
+                        out << "            offset += " << p.name << "_len;\n";
+                    }
+                }
+                out << "            return res;\n";
+                out << "        }\n";
+
+                out << "    };\n\n";
+            }
         }
 
         // Functions
@@ -1015,9 +1076,11 @@ int main(int argc, char **argv)
             else if (p.type == "string")
             {
                 final_js << "        const encoded_" << i << " = text_encoder.encode(" << name << ");\n";
-                final_js << "        event_view.setUint16(pos, encoded_" << i << ".length, true); pos += 2;\n";
+                final_js << "        const len_" << i << " = encoded_" << i << ".length;\n";
+                final_js << "        event_view.setUint16(pos, len_" << i << " + 1, true); pos += 2;\n";
                 final_js << "        new Uint8Array(memory.buffer, event_buffer_ptr_val + pos).set(encoded_" << i << ");\n";
-                final_js << "        pos += encoded_" << i << ".length;\n";
+                final_js << "        event_view.setUint8(pos + len_" << i << ", 0);\n";
+                final_js << "        pos += len_" << i << " + 1;\n";
             }
         }
         final_js << "        const len = pos - start_pos;\n";

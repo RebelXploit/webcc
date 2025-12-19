@@ -78,11 +78,10 @@ void update(float time_ms) {
     while (webcc::poll_event(opcode, &data, len)) {
         switch (opcode) {
             case webcc::input::EVENT_MOUSE_DOWN: {
-                int32_t args[3];
-                __builtin_memcpy(args, data, 12);
-                int button = args[0];
-                int x = args[1];
-                int y = args[2];
+                auto event = webcc::parse_event<webcc::input::MouseDownEvent>(data, len);
+                int button = event.button;
+                int x = event.x;
+                int y = event.y;
 
                 item_count++;
                 last_clicked_x = x;

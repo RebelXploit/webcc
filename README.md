@@ -16,42 +16,68 @@
 
 ## Quick Start
 
-Here is a complete example of creating a Canvas and drawing to it from C++:
+Here is a complete example of creating a Canvas, handling mouse input, and running a game loop:
 
 ```cpp
 #include "webcc/canvas.h"
 #include "webcc/dom.h"
 #include "webcc/system.h"
+#include "webcc/input.h"
 
-int main() {
-    // Get the document body handle
-    int body = webcc::dom::get_body();
+// Global state
+int ctx = 0;
+int mouse_x = 400.0f;
+int mouse_y = 300.0f;
 
-    // Create a canvas element (800x600)
-    // Returns an integer handle for fast access
-    int canvas = webcc::canvas::create_canvas("game-canvas", 800, 600);
-    
-    // Append the canvas to the body
-    webcc::dom::append_child(body, canvas);
+// Main loop function called every frame
+void update(float time_ms) {
+    // Poll events
+    uint8_t opcode;
+    const uint8_t* data;
+    uint32_t len;
+    while (webcc::poll_event(opcode, &data, len)) {
+        if (opcode == webcc::input::EVENT_MOUSE_MOVE) {
+            // Parse event data safely
+            auto event = webcc::parse_event<webcc::input::MouseMoveEvent>(data, len);
+            mouse_x = event.x;
+            mouse_y = event.y;
+        }
+    }
 
-    // Get 2D context
-    int ctx = webcc::canvas::get_context(canvas, "2d");
-
-    // Draw a blue **background**
-    webcc::canvas::set_fill_style(ctx, 52, 152, 219); // RGB
+    // Clear background (Blue)
+    webcc::canvas::set_fill_style(ctx, 52, 152, 219);
     webcc::canvas::fill_rect(ctx, 0, 0, 800, 600);
 
-    // Draw a yellow circle in the center
+    // Draw circle at mouse position (Yellow)
     webcc::canvas::begin_path(ctx);
-    webcc::canvas::arc(ctx, 400, 300, 50, 0, 6.28318f);
+    webcc::canvas::arc(ctx, mouse_x, mouse_y, 50, 0, 6.28318f);
     webcc::canvas::set_fill_style(ctx, 241, 196, 15);
     webcc::canvas::fill(ctx);
 
-    // Draw some text
+    // Draw text
     webcc::canvas::set_font(ctx, "30px Arial");
     webcc::canvas::set_fill_style(ctx, 255, 255, 255);
-    webcc::canvas::fill_text(ctx, "Hello WebCC!", 310, 500);
+    webcc::canvas::fill_text(ctx, "Move your mouse!", 280, 500);
 
+    // Flush commands to JS
+    webcc::flush();
+}
+
+int main() {
+    // Setup DOM
+    int body = webcc::dom::get_body();
+    int canvas = webcc::canvas::create_canvas("game-canvas", 800, 600);
+    webcc::dom::append_child(body, canvas);
+    
+    // Get Context
+    ctx = webcc::canvas::get_context(canvas, "2d");
+    
+    // Initialize mouse input on the canvas
+    webcc::input::init_mouse(canvas);
+
+    // Start the main loop
+    webcc::system::set_main_loop(update);
+    
     // Flush commands to JS
     webcc::flush();
     

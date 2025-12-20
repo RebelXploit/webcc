@@ -5,8 +5,8 @@
 
 // Global state
 float rotation = 0.0f;
-float mouse_x = 0.0f;
-float mouse_y = 0.0f;
+int mouse_x = 0.0f;
+int mouse_y = 0.0f;
 bool is_clicking = false;
 
 // Canvas Handles
@@ -28,8 +28,8 @@ void update(float time_ms) {
         switch (opcode) {
             case webcc::input::EVENT_MOUSE_MOVE: {
                 auto event = webcc::parse_event<webcc::input::MouseMoveEvent>(data, len);
-                mouse_x = (float)event.x;
-                mouse_y = (float)event.y;
+                mouse_x = event.x;
+                mouse_y = event.y;
                 break;
             }
             case webcc::input::EVENT_MOUSE_DOWN: {

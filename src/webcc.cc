@@ -856,6 +856,7 @@ int main(int argc, char **argv)
     std::string defs_path = "schema.def";
     std::vector<std::string> input_files;
     bool generate_headers = false;
+    std::string out_dir = ".";
 
     // Parse command-line arguments.
     for (int i = 1; i < argc; ++i)
@@ -869,11 +870,26 @@ int main(int argc, char **argv)
                 defs_path = argv[++i];
             }
         }
+        else if (arg == "--out")
+        {
+            if (i + 1 < argc)
+            {
+                out_dir = argv[++i];
+            }
+        }
         else
         {
             input_files.push_back(arg);
         }
     }
+
+    // Ensure output directory exists
+    if (out_dir != ".")
+    {
+        mkdir(out_dir.c_str(), 0755);
+    }
+
+    std::string build_dir = out_dir + "/.webcc_cache";
 
     // Load the command and event definitions.
     Defs defs;
@@ -894,7 +910,7 @@ int main(int argc, char **argv)
 
     if (input_files.empty())
     {
-        std::cerr << "Usage: webcc [--defs <path>] <source.cc> ... or webcc headers" << std::endl;
+        std::cerr << "Usage: webcc [--defs <path>] [--out <dir>] <source.cc> ... or webcc headers" << std::endl;
         return 1;
     }
 
@@ -1108,8 +1124,8 @@ int main(int argc, char **argv)
     final_js << JS_FLUSH_HEAD;
     final_js << cases_builder.str();
     final_js << JS_TAIL;
-    write_file("app.js", final_js.str());
-    std::cout << "[WebCC] Generated app.js" << std::endl;
+    write_file(out_dir + "/app.js", final_js.str());
+    std::cout << "[WebCC] Generated " << out_dir << "/app.js" << std::endl;
 
     // C. GENERATE HTML (Basic scaffolding)
     std::string html = R"(
@@ -1120,35 +1136,94 @@ int main(int argc, char **argv)
 </body>
 </html>
 )";
-    write_file("index.html", html);
-    std::cout << "[WebCC] Generated index.html" << std::endl;
+    write_file(out_dir + "/index.html", html);
+    std::cout << "[WebCC] Generated " << out_dir << "/index.html" << std::endl;
 
-    // D. COMPILE C++ TO WASM
-    // We construct the clang command here.
-    // Flags explanation:
-    // --target=wasm32       : Output WebAssembly
-    // -nostdlib             : Don't link standard C++ library (WASM has no libc)
-    // -Wl,--no-entry        : We don't have a standard C main() entry point immediately
-    // -Wl,--export-all      : Export our functions (webcc_get_buffer, etc) to JS
-    // -Wl,--allow-undefined : Allow 'webcc_js_flush' to be undefined (JS provides it)
-    // Add both the top-level `include` (generated headers) and the
-    // `webcc/include` path (packaged headers) so user code can include
-    // either `webcc/...` or generated `include/...` headers.
+    // D. COMPILE C++ TO WASM (Incremental)
+    std::cout << "[WebCC] Compiling..." << std::endl;
+
+    // Ensure cache directory exists
+    mkdir(build_dir.c_str(), 0755);
+
+    std::string exe_dir = get_executable_dir();
+    std::vector<std::string> all_sources = input_files;
+    
+    // Add internal sources using absolute paths relative to the compiler executable
+    all_sources.push_back(exe_dir + "/src/command_buffer.cc");
+    all_sources.push_back(exe_dir + "/src/event_buffer.cc");
+
+    std::string object_files_str;
+    bool compilation_failed = false;
+
+    for (const auto &src : all_sources)
+    {
+        // Generate a unique object file name based on the source path.
+        // We replace non-alphanumeric chars with '_' to flatten the path.
+        std::string obj_name = src;
+        for (char &c : obj_name)
+        {
+            if (!isalnum(c)) c = '_';
+        }
+        std::string obj = build_dir + "/" + obj_name + ".o";
+
+        struct stat src_stat, obj_stat;
+        bool need_compile = true;
+
+        if (stat(src.c_str(), &src_stat) == 0)
+        {
+            if (stat(obj.c_str(), &obj_stat) == 0)
+            {
+                // If obj is newer than src, we don't need to recompile
+                if (obj_stat.st_mtime >= src_stat.st_mtime)
+                {
+                    need_compile = false;
+                }
+            }
+        }
+        else
+        {
+            std::cerr << "[WebCC] Error: Source file not found: " << src << std::endl;
+            return 1;
+        }
+
+        if (need_compile)
+        {
+            std::cout << "  [CC] " << src << std::endl;
+            // Compile to object file
+            // -c : Compile and assemble, but do not link
+            std::string cc_cmd = "clang++ --target=wasm32 -O3 -std=c++20 -nostdlib -c -o " + obj + " " + src + 
+                                 " -I " + exe_dir + "/include -I " + exe_dir + "/src";
+            if (system(cc_cmd.c_str()) != 0)
+            {
+                compilation_failed = true;
+                break;
+            }
+        }
+
+        object_files_str += obj + " ";
+    }
+
+    if (compilation_failed)
+    {
+        std::cerr << "[WebCC] Compilation failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "[WebCC] Linking..." << std::endl;
     std::string cmd = "clang++ --target=wasm32 -O3 -std=c++20 -nostdlib "
                       "-Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined "
-                      "-o app.wasm " +
-                      source_files + " src/command_buffer.cc src/event_buffer.cc -I include";
+                      "-o " + out_dir + "/app.wasm " +
+                      object_files_str;
 
-    std::cout << "[WebCC] Compiling WASM..." << std::endl;
-    std::cout << "  COMMAND: " << cmd << std::endl;
+    // std::cout << "  COMMAND: " << cmd << std::endl;
 
     int result = system(cmd.c_str());
     if (result != 0)
     {
-        std::cerr << "[WebCC] Compilation failed!" << std::endl;
+        std::cerr << "[WebCC] Linking failed!" << std::endl;
         return result;
     }
 
-    std::cout << "[WebCC] Success! Run 'python3 -m http.server' to view." << std::endl;
+    std::cout << "[WebCC] Success! Run 'python3 -m http.server' in " << out_dir << " to view." << std::endl;
     return 0;
 }

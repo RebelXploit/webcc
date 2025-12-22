@@ -531,8 +531,21 @@ static void emit_schema_header(const Defs &defs)
     std::cout << "[WebCC] Emitted src/cli/webcc_schema.h" << std::endl;
 }
 
+// Helper to map schema types to C++ types
+static std::string map_cpp_type(const std::string& type, const std::string& name) {
+    if (type == "string") return "webcc::string_view";
+    if ((type == "int32" || type == "uint32") && 
+        (name.find("handle") != std::string::npos || name == "id" || name.find("_id") != std::string::npos)) {
+        return "webcc::handle";
+    }
+    if (type == "int32") return "int32_t";
+    if (type == "uint32") return "uint32_t";
+    if (type == "float32") return "float";
+    if (type == "uint8") return "uint8_t";
+    return "void*";
+}
+
 // Generates the C++ header files for each namespace (e.g., webcc/dom.h).
-// These headers provide the C++ functions that send commands to JavaScript.
 static void emit_headers(const Defs &defs)
 {
     std::cout << "[WebCC] Emitting headers..." << std::endl;
@@ -553,7 +566,9 @@ static void emit_headers(const Defs &defs)
         std::stringstream out;
         out << "// GENERATED FILE - DO NOT EDIT\n";
         out << "#pragma once\n";
-        out << "#include \"webcc.h\"\n\n";
+        out << "#include \"webcc.h\"\n";
+        out << "#include \"webcc/core/handle.h\"\n";
+        out << "#include \"webcc/core/string_view.h\"\n\n";
         out << "namespace webcc::" << ns << " {\n";
 
         // Commands
@@ -630,13 +645,7 @@ static void emit_headers(const Defs &defs)
                 out << "    struct " << struct_name << " {\n";
                 for (const auto &p : d.params)
                 {
-                    std::string type = p.type;
-                    if (type == "int32") type = "int32_t";
-                    else if (type == "uint32") type = "uint32_t";
-                    else if (type == "float32") type = "float";
-                    else if (type == "uint8") type = "uint8_t";
-                    else if (type == "string") type = "const char*";
-                    
+                    std::string type = map_cpp_type(p.type, p.name);
                     std::string name = p.name;
                     out << "        " << type << " " << name << ";\n";
                 }
@@ -645,17 +654,24 @@ static void emit_headers(const Defs &defs)
                 out << "            " << struct_name << " res;\n";
                 out << "            uint32_t offset = 0;\n";
                 for (const auto &p : d.params) {
+                    std::string cpp_type = map_cpp_type(p.type, p.name);
                     if (p.type == "int32") {
-                        out << "            res." << p.name << " = *(int32_t*)(data + offset); offset += 4;\n";
+                        if (cpp_type == "webcc::handle")
+                            out << "            res." << p.name << " = webcc::handle(*(int32_t*)(data + offset)); offset += 4;\n";
+                        else
+                            out << "            res." << p.name << " = *(int32_t*)(data + offset); offset += 4;\n";
                     } else if (p.type == "uint32") {
-                        out << "            res." << p.name << " = *(uint32_t*)(data + offset); offset += 4;\n";
+                        if (cpp_type == "webcc::handle")
+                            out << "            res." << p.name << " = webcc::handle((int32_t)*(uint32_t*)(data + offset)); offset += 4;\n";
+                        else
+                            out << "            res." << p.name << " = *(uint32_t*)(data + offset); offset += 4;\n";
                     } else if (p.type == "float32") {
                         out << "            res." << p.name << " = *(float*)(data + offset); offset += 4;\n";
                     } else if (p.type == "uint8") {
                         out << "            res." << p.name << " = *(uint8_t*)(data + offset); offset += 1;\n";
                     } else if (p.type == "string") {
                         out << "            uint16_t " << p.name << "_len = *(uint16_t*)(data + offset); offset += 2;\n";
-                        out << "            res." << p.name << " = (const char*)(data + offset);\n";
+                        out << "            res." << p.name << " = webcc::string_view((const char*)(data + offset), " << p.name << "_len);\n";
                         out << "            offset += " << p.name << "_len;\n";
                     }
                 }
@@ -706,40 +722,43 @@ static void emit_headers(const Defs &defs)
                 out << ");\n";
 
                 // Generate inline wrapper
-                out << "    inline " << ret_type << " " << d.func_name << "(";
+                std::string wrapper_ret_type = ret_type;
+                bool ret_is_handle = (ret_type == "int32_t");
+                if (ret_is_handle) wrapper_ret_type = "webcc::handle";
+
+                out << "    inline " << wrapper_ret_type << " " << d.func_name << "(";
                 for (size_t i = 0; i < d.params.size(); ++i)
                 {
                     if (i)
                         out << ", ";
                     const auto &p = d.params[i];
                     std::string name = p.name.empty() ? ("arg" + std::to_string(i)) : p.name;
-                    if (p.type == "string")
-                        out << "const char* " << name;
-                    else if (p.type == "float32")
-                        out << "float " << name;
-                    else if (p.type == "uint8")
-                        out << "uint8_t " << name;
-                    else if (p.type == "uint32")
-                        out << "uint32_t " << name;
-                    else if (p.type == "int32")
-                        out << "int32_t " << name;
-                    else
-                        out << "/*unknown*/ void* " << name;
+                    out << map_cpp_type(p.type, p.name) << " " << name;
                 }
                 out << "){\n";
                 out << "        ::webcc::flush();\n";
-                out << "        return webcc_" << d.ns << "_" << d.func_name << "(";
+                out << "        return ";
+                if (ret_is_handle) out << "webcc::handle(";
+                out << "webcc_" << d.ns << "_" << d.func_name << "(";
                 for (size_t i = 0; i < d.params.size(); ++i)
                 {
                     if (i)
                         out << ", ";
                     const auto &p = d.params[i];
                     std::string name = p.name.empty() ? ("arg" + std::to_string(i)) : p.name;
-                    out << name;
-                    if (p.type == "string")
-                        out << ", webcc::strlen(" << name << ")";
+                    std::string cpp_type = map_cpp_type(p.type, p.name);
+                    
+                    if (cpp_type == "webcc::string_view") {
+                        out << name << ".data(), " << name << ".length()";
+                    } else if (cpp_type == "webcc::handle") {
+                        out << "(int32_t)" << name;
+                    } else {
+                        out << name;
+                    }
                 }
-                out << ");\n";
+                out << ")";
+                if (ret_is_handle) out << ")";
+                out << ";\n";
                 out << "    }\n\n";
                 continue;
             }
@@ -752,20 +771,7 @@ static void emit_headers(const Defs &defs)
                     out << ", ";
                 const auto &p = d.params[i];
                 std::string name = p.name.empty() ? ("arg" + std::to_string(i)) : p.name;
-                if (p.type == "uint8")
-                    out << "uint8_t " << name;
-                else if (p.type == "uint32")
-                    out << "uint32_t " << name;
-                else if (p.type == "int32")
-                    out << "int32_t " << name;
-                else if (p.type == "float32")
-                    out << "float " << name;
-                else if (p.type == "string")
-                    out << "const char* " << name;
-                else if (p.type == "func_ptr")
-                    out << "void (*" << name << ")(float)";
-                else
-                    out << "/*unknown*/ void* " << name;
+                out << map_cpp_type(p.type, p.name) << " " << name;
             }
             out << "){\n";
             out << "        push_command((uint32_t)OP_" << d.name << ");\n";
@@ -773,7 +779,13 @@ static void emit_headers(const Defs &defs)
             {
                 const auto &p = d.params[i];
                 std::string name = p.name.empty() ? ("arg" + std::to_string(i)) : p.name;
-                if (p.type == "uint8")
+                std::string cpp_type = map_cpp_type(p.type, p.name);
+
+                if (cpp_type == "webcc::string_view")
+                    out << "        webcc::CommandBuffer::push_string(" << name << ".data(), " << name << ".length());\n";
+                else if (cpp_type == "webcc::handle")
+                    out << "        push_data<int32_t>((int32_t)" << name << ");\n";
+                else if (p.type == "uint8")
                     out << "        push_data<uint32_t>((uint32_t)" << name << ");\n";
                 else if (p.type == "uint32")
                     out << "        push_data<uint32_t>(" << name << ");\n";
@@ -781,8 +793,6 @@ static void emit_headers(const Defs &defs)
                     out << "        push_data<int32_t>(" << name << ");\n";
                 else if (p.type == "float32")
                     out << "        push_data<float>(" << name << ");\n";
-                else if (p.type == "string")
-                    out << "        webcc::CommandBuffer::push_string(" << name << ", strlen(" << name << "));\n";
                 else if (p.type == "func_ptr")
                     out << "        push_data<uint32_t>((uint32_t)(uintptr_t)" << name << ");\n";
                 else

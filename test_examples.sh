@@ -12,6 +12,7 @@ EXAMPLES=(
     "webcc_dom"
     "webcc_types"
     "webcc_webgl"
+    "webcc_webgl_waves"
     "webcc_webgpu"
 )
 

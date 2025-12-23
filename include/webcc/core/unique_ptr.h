@@ -1,12 +1,11 @@
 #pragma once
 #include "allocator.h"
 
-// Minimal placement new definition if <new> is not available
 inline void* operator new(size_t, void* p) { return p; }
 
 namespace webcc
 {
-    // Minimal implementation of move/forward to avoid <utility> dependency
+    // Minimal implementation of move/forward
     template<typename T> struct remove_reference { typedef T type; };
     template<typename T> struct remove_reference<T&> { typedef T type; };
     template<typename T> struct remove_reference<T&&> { typedef T type; };

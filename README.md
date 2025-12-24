@@ -17,6 +17,30 @@
 
 ## Quick Start
 
+### Hello World
+
+A minimal example to get started:
+
+```cpp
+#include "webcc/canvas.h"
+#include "webcc/dom.h"
+
+int main() {
+    auto body = webcc::dom::get_body();
+    auto canvas = webcc::canvas::create_canvas("canvas", 800, 600);
+    webcc::dom::append_child(body, canvas);
+    
+    auto ctx = webcc::canvas::get_context(canvas, "2d");
+    webcc::canvas::set_fill_style(ctx, 255, 0, 0); // Red
+    webcc::canvas::fill_rect(ctx, 10, 10, 100, 100);
+    
+    webcc::flush();
+    return 0;
+}
+```
+
+### Interactive Example
+
 Here is a complete example of creating a Canvas, handling mouse input, and running a game loop:
 
 ```cpp
@@ -106,6 +130,19 @@ int main() {
     ```
     Open [http://localhost:8000](http://localhost:8000).
 
+## Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/io-eric/webcc.git
+    cd webcc
+    ```
+
+2.  **Prerequisites**:
+    - Linux, macOS, or Windows (via WSL) with Bash.
+    - `clang++` (version 8+ recommended) for compiling WASM.
+    - A C++20 compiler for building the CLI tool.
+
 ## CLI Reference
 
 The `webcc` tool is your primary interface for the framework.
@@ -150,19 +187,6 @@ A triangle rendered using the WebGPU API.
 Creating and styling HTML elements from C++.
 
 <img src="docs/images/dom_demo.gif" width="400" alt="DOM Demo">
-
-## Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/io-eric/webcc.git
-    cd webcc
-    ```
-
-2.  **Prerequisites**:
-    - Linux, macOS, or Windows (via WSL) with Bash.
-    - `clang++` (version 8+ recommended) for compiling WASM.
-    - A C++20 compiler for building the CLI tool.
 
 ## Architecture
 

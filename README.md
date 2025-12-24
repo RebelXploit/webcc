@@ -17,31 +17,9 @@
 
 ## Quick Start
 
-### Hello World
+### Example
 
-A minimal example to get started:
-
-```cpp
-#include "webcc/canvas.h"
-#include "webcc/dom.h"
-
-int main() {
-    auto body = webcc::dom::get_body();
-    auto canvas = webcc::canvas::create_canvas("canvas", 800, 600);
-    webcc::dom::append_child(body, canvas);
-    
-    auto ctx = webcc::canvas::get_context(canvas, "2d");
-    webcc::canvas::set_fill_style(ctx, 255, 0, 0); // Red
-    webcc::canvas::fill_rect(ctx, 10, 10, 100, 100);
-    
-    webcc::flush();
-    return 0;
-}
-```
-
-### Interactive Example
-
-Here is a complete example of creating a Canvas, handling mouse input, and running a game loop:
+Here is a complete example of creating a Canvas, handling mouse input, and running a loop:
 
 ```cpp
 #include "webcc/canvas.h"

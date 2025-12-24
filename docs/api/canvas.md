@@ -40,6 +40,7 @@ void set_size(webcc::handle handle, float width, float height);
 void fill_rect(webcc::handle handle, float x, float y, float w, float h);
 void stroke_rect(webcc::handle handle, float x, float y, float w, float h);
 void clear_rect(webcc::handle handle, float x, float y, float w, float h);
+void rect(webcc::handle handle, float x, float y, float w, float h);
 ```
 
 ### Paths
@@ -49,8 +50,11 @@ void begin_path(webcc::handle handle);
 void close_path(webcc::handle handle);
 void move_to(webcc::handle handle, float x, float y);
 void line_to(webcc::handle handle, float x, float y);
+void bezier_curve_to(webcc::handle handle, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
+void quadratic_curve_to(webcc::handle handle, float cpx, float cpy, float x, float y);
 void stroke(webcc::handle handle);
 void fill(webcc::handle handle);
+void clip(webcc::handle handle);
 void arc(webcc::handle handle, float x, float y, float radius, float start_angle, float end_angle);
 ```
 
@@ -63,6 +67,7 @@ void set_stroke_style(webcc::handle handle, uint8_t r, uint8_t g, uint8_t b);
 void set_stroke_style_str(webcc::handle handle, webcc::string_view color);
 void set_line_width(webcc::handle handle, float width);
 void set_global_alpha(webcc::handle handle, float alpha);
+void set_global_composite_operation(webcc::handle handle, webcc::string_view op);
 void set_line_cap(webcc::handle handle, webcc::string_view cap);
 void set_line_join(webcc::handle handle, webcc::string_view join);
 void set_shadow(webcc::handle handle, float blur, float off_x, float off_y, webcc::string_view color);
@@ -72,10 +77,12 @@ void set_shadow(webcc::handle handle, float blur, float off_x, float off_y, webc
 
 ```cpp
 void fill_text(webcc::handle handle, webcc::string_view text, float x, float y);
+void stroke_text(webcc::handle handle, webcc::string_view text, float x, float y);
 void fill_text_f(webcc::handle handle, webcc::string_view fmt, float val, float x, float y);
 void fill_text_i(webcc::handle handle, webcc::string_view fmt, int32_t val, float x, float y);
 void set_font(webcc::handle handle, webcc::string_view font);
 void set_text_align(webcc::handle handle, webcc::string_view align);
+void set_text_baseline(webcc::handle handle, webcc::string_view baseline);
 ```
 
 ### Transformations
@@ -84,6 +91,7 @@ void set_text_align(webcc::handle handle, webcc::string_view align);
 void translate(webcc::handle handle, float x, float y);
 void rotate(webcc::handle handle, float angle);
 void scale(webcc::handle handle, float x, float y);
+void reset_transform(webcc::handle handle);
 void save(webcc::handle handle);
 void restore(webcc::handle handle);
 ```
@@ -92,4 +100,6 @@ void restore(webcc::handle handle);
 
 ```cpp
 void draw_image(webcc::handle handle, webcc::handle img_handle, float x, float y);
+void draw_image_scaled(webcc::handle handle, webcc::handle img_handle, float x, float y, float w, float h);
+void draw_image_full(webcc::handle handle, webcc::handle img_handle, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 ```

@@ -38,10 +38,10 @@ Create a file named `main.cc` with the following content:
 
 int main() {
     // Get a handle to the document body
-    auto body = webcc::dom::get_body();
+    webcc::handle body = webcc::dom::get_body();
 
     // Create a new heading element
-    auto h1 = webcc::dom::create_element("h1");
+    webcc::handle h1 = webcc::dom::create_element("h1");
     webcc::dom::set_inner_text(h1, "Hello from WebCC!");
 
     // Append the heading to the body

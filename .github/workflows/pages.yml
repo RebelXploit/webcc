@@ -80,31 +80,31 @@ jobs:
               <div class="grid">
                   <a href="examples/webcc_canvas/index.html" class="card">
                       <h3>Canvas 2D</h3>
-                      <p>Interactive 2D graphics with mouse input.</p>
+                      <p>Canvas 2D rendering and Mouse Input.</p>
                   </a>
                   <a href="examples/webcc_webgl/index.html" class="card">
                       <h3>WebGL Cube</h3>
-                      <p>Basic 3D rendering with raw WebGL.</p>
+                      <p>Raw WebGL 3D Cube rendering.</p>
                   </a>
                   <a href="examples/webcc_webgl_waves/index.html" class="card">
                       <h3>WebGL Waves</h3>
-                      <p>Animated terrain using shaders.</p>
+                      <p>Procedural Waves with WebGL Shaders.</p>
                   </a>
                   <a href="examples/webcc_dom/index.html" class="card">
                       <h3>DOM Manipulation</h3>
-                      <p>Creating HTML elements from C++.</p>
+                      <p>DOM manipulation and Event handling from C++.</p>
                   </a>
                   <a href="examples/webcc_audio/index.html" class="card">
                       <h3>Audio</h3>
-                      <p>Sound playback and synthesis.</p>
+                      <p>Audio playback control from C++.</p>
                   </a>
                   <a href="examples/webcc_webgpu/index.html" class="card">
                       <h3>WebGPU</h3>
-                      <p>Next-gen graphics API demo.</p>
+                      <p>Basic WebGPU Triangle rendering.</p>
                   </a>
                   <a href="examples/webcc_types/index.html" class="card">
                       <h3>Types</h3>
-                      <p>Data type marshaling tests.</p>
+                      <p>C++ Core types (String, Array, Optional) and Heap Visualization.</p>
                   </a>
               </div>
           </body>

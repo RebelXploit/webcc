@@ -153,6 +153,8 @@ Use the `--out <dir>` flag to specify the output directory (defaults to the curr
 
 ## Examples
 
+**[View Live Demos](https://io-eric.github.io/webcc/)**
+
 Check the `examples/` directory for complete demos.
 
 ### 1. Canvas 2D (`webcc_canvas`)

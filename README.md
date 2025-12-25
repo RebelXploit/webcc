@@ -10,6 +10,10 @@
 
 **WebCC** is a lightweight, zero-dependency C++ toolchain and framework for building WebAssembly applications. It provides a direct, high-performance bridge between C++ and HTML5 APIs (DOM, Canvas, WebGL, WebGPU, Audio, ...).
 
+<p align="center">
+  <img src="docs/images/webcc-diagram.png" alt="WebCC Architecture Diagram" width="600">
+</p>
+
 ## Features
 
 - Generates minimal WASM binaries and glue code.

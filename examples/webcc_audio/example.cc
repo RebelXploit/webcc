@@ -124,7 +124,7 @@ int main() {
     webcc::dom::append_child(game_container, game_desc);
 
     // Create audio element
-    bg_music = webcc::audio::create_audio("assets/music.mp3");
+    bg_music = webcc::audio::create_audio("https://cdn.pixabay.com/audio/2025/06/23/audio_e6a00ad257.mp3");
     webcc::audio::set_loop(bg_music, 1);
     webcc::audio::set_volume(bg_music, 0.5f);
 

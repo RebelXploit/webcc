@@ -7,6 +7,7 @@
 [![CI](https://github.com/io-eric/webcc/actions/workflows/ci.yml/badge.svg)](https://github.com/io-eric/webcc/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/io-eric/webcc)
 
 **WebCC** is a lightweight, zero-dependency C++ toolchain and framework for building WebAssembly applications. It provides a direct, high-performance bridge between C++ and HTML5 APIs (DOM, Canvas, WebGL, WebGPU, Audio, ...).
 

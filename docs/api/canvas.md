@@ -56,6 +56,8 @@ void stroke(webcc::handle handle);
 void fill(webcc::handle handle);
 void clip(webcc::handle handle);
 void arc(webcc::handle handle, float x, float y, float radius, float start_angle, float end_angle);
+void ellipse(webcc::handle handle, float x, float y, float radius_x, float radius_y, float rotation, float start_angle, float end_angle, uint8_t counter_clockwise);
+void arc_to(webcc::handle handle, float x1, float y1, float x2, float y2, float radius);
 ```
 
 ### Styles
@@ -71,6 +73,7 @@ void set_global_composite_operation(webcc::handle handle, webcc::string_view op)
 void set_line_cap(webcc::handle handle, webcc::string_view cap);
 void set_line_join(webcc::handle handle, webcc::string_view join);
 void set_shadow(webcc::handle handle, float blur, float off_x, float off_y, webcc::string_view color);
+void set_miter_limit(webcc::handle handle, float limit);
 ```
 
 ### Text
@@ -83,6 +86,7 @@ void fill_text_i(webcc::handle handle, webcc::string_view fmt, int32_t val, floa
 void set_font(webcc::handle handle, webcc::string_view font);
 void set_text_align(webcc::handle handle, webcc::string_view align);
 void set_text_baseline(webcc::handle handle, webcc::string_view baseline);
+float measure_text_width(webcc::handle handle, webcc::string_view text);
 ```
 
 ### Transformations
@@ -94,6 +98,8 @@ void scale(webcc::handle handle, float x, float y);
 void reset_transform(webcc::handle handle);
 void save(webcc::handle handle);
 void restore(webcc::handle handle);
+void set_transform(webcc::handle handle, float a, float b, float c, float d, float e, float f);
+void transform(webcc::handle handle, float a, float b, float c, float d, float e, float f);
 ```
 
 ### Images
@@ -102,4 +108,11 @@ void restore(webcc::handle handle);
 void draw_image(webcc::handle handle, webcc::handle img_handle, float x, float y);
 void draw_image_scaled(webcc::handle handle, webcc::handle img_handle, float x, float y, float w, float h);
 void draw_image_full(webcc::handle handle, webcc::handle img_handle, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+void set_image_smoothing_enabled(webcc::handle handle, uint8_t enabled);
+
+### Debugging
+
+```cpp
+void log_canvas_info(webcc::handle handle);
+```
 ```

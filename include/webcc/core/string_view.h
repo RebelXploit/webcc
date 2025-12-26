@@ -28,6 +28,9 @@ namespace webcc
         constexpr uint32_t size() const { return m_len; }
         constexpr bool empty() const { return m_len == 0; }
 
+        constexpr const char* begin() const { return m_data; }
+        constexpr const char* end() const { return m_data + m_len; }
+
         constexpr char operator[](uint32_t i) const { return m_data[i]; }
 
         bool operator==(const string_view& other) const

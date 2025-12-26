@@ -9,7 +9,7 @@
 dom|command|GET_BODY|get_body|RET:int32|{ if(!elements[0]) elements[0] = document.body; return 0; }
 dom|command|CREATE_ELEMENT|create_element|string:tag RET:int32|{ const handle = (window.webcc_next_id = (window.webcc_next_id || 0) + 1); const el = document.createElement(tag); elements[handle] = el; return handle; }
 dom|command|SET_ATTRIBUTE|set_attribute|int32:handle string:name string:value|{ const el = elements[handle]; if(!el){ console.warn('set_attribute: unknown element handle', handle); continue; } el.setAttribute(name, value); }
-dom|command|GET_ATTRIBUTE|get_attribute|int32:handle string:name|{ /* TODO: Return values not supported yet */ }
+dom|command|GET_ATTRIBUTE|get_attribute|int32:handle string:name RET:string|{ const el = elements[handle]; if(!el){ console.warn('get_attribute: unknown element handle', handle); return 0; } const ret = el.getAttribute(name) || ""; }
 dom|command|APPEND_CHILD|append_child|int32:parent_handle int32:child_handle|{ const parent = elements[parent_handle]; const child = elements[child_handle]; if(!parent || !child){ console.warn('append_child: unknown handles', parent_handle, child_handle); continue; } parent.appendChild(child); }
 dom|command|REMOVE_ELEMENT|remove_element|int32:handle|{ const el = elements[handle]; if(!el){ console.warn('remove_element: unknown element handle', handle); continue; } el.remove(); elements[handle] = undefined; }
 dom|command|SET_INNER_HTML|set_inner_html|int32:handle string:html|{ const el = elements[handle]; if(el) el.innerHTML = html; }

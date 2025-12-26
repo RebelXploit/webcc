@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include "../../src/core/command_buffer.h"
 #include "../../src/core/event_buffer.h"
+#include "../../src/core/scratch_buffer.h"
 
 namespace webcc
 {

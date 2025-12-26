@@ -119,7 +119,8 @@ void emit_headers(const Defs &defs)
         out << "#pragma once\n";
         out << "#include \"webcc.h\"\n";
         out << "#include \"webcc/core/handle.h\"\n";
-        out << "#include \"webcc/core/string_view.h\"\n\n";
+        out << "#include \"webcc/core/string_view.h\"\n";
+        out << "#include \"webcc/core/string.h\"\n";
         out << "namespace webcc::" << ns << " {\n";
 
         // Commands
@@ -250,7 +251,10 @@ void emit_headers(const Defs &defs)
                     ret_type = "float";
 
                 // Generate extern "C" import
-                out << "    extern \"C\" " << ret_type << " webcc_" << d.ns << "_" << d.func_name << "(";
+                std::string c_ret_type = ret_type;
+                if (ret_type == "string") c_ret_type = "uint32_t"; // Returns length
+
+                out << "    extern \"C\" " << c_ret_type << " webcc_" << d.ns << "_" << d.func_name << "(";
                 for (size_t i = 0; i < d.params.size(); ++i)
                 {
                     if (i)
@@ -276,6 +280,7 @@ void emit_headers(const Defs &defs)
                 std::string wrapper_ret_type = ret_type;
                 bool ret_is_handle = (ret_type == "int32_t");
                 if (ret_is_handle) wrapper_ret_type = "webcc::handle";
+                if (ret_type == "string") wrapper_ret_type = "webcc::string";
 
                 out << "    inline " << wrapper_ret_type << " " << d.func_name << "(";
                 for (size_t i = 0; i < d.params.size(); ++i)
@@ -288,9 +293,15 @@ void emit_headers(const Defs &defs)
                 }
                 out << "){\n";
                 out << "        ::webcc::flush();\n";
-                out << "        return ";
-                if (ret_is_handle) out << "webcc::handle(";
-                out << "webcc_" << d.ns << "_" << d.func_name << "(";
+                
+                if (ret_type == "string") {
+                    out << "        uint32_t len = webcc_" << d.ns << "_" << d.func_name << "(";
+                } else {
+                    out << "        return ";
+                    if (ret_is_handle) out << "webcc::handle(";
+                    out << "webcc_" << d.ns << "_" << d.func_name << "(";
+                }
+
                 for (size_t i = 0; i < d.params.size(); ++i)
                 {
                     if (i)
@@ -310,6 +321,12 @@ void emit_headers(const Defs &defs)
                 out << ")";
                 if (ret_is_handle) out << ")";
                 out << ";\n";
+
+                if (ret_type == "string") {
+                    out << "        const char* data = (const char*)::webcc::scratch_buffer_data();\n";
+                    out << "        return webcc::string(data, len);\n";
+                }
+
                 out << "    }\n\n";
                 continue;
             }
@@ -559,7 +576,20 @@ void generate_js_runtime(const Defs &defs, const std::string &user_code, const s
                     }
                 }
 
-                ss << "                " << d.action << "\n";
+                // Strip outer braces if present to expose local variables (like 'ret')
+                std::string action_body = d.action;
+                size_t open_brace = action_body.find('{');
+                size_t close_brace = action_body.rfind('}');
+                if (open_brace != std::string::npos && close_brace != std::string::npos && close_brace > open_brace) {
+                    action_body = action_body.substr(open_brace + 1, close_brace - open_brace - 1);
+                }
+                ss << "                " << action_body << "\n";
+                if (d.return_type == "string") {
+                    ss << "                const encoded = text_encoder.encode(ret);\n";
+                    ss << "                const len = encoded.length;\n";
+                    ss << "                new Uint8Array(memory.buffer, scratch_buffer_ptr_val).set(encoded);\n";
+                    ss << "                return len;\n";
+                }
                 ss << "            }";
                 generated_js_imports.push_back(ss.str());
             }
@@ -598,9 +628,10 @@ void generate_js_runtime(const Defs &defs, const std::string &user_code, const s
     final_js << JS_INIT_TAIL;
 
     // Event System Setup: Set up buffers for JS to send events to C++.
-    final_js << "    const { webcc_event_buffer_ptr, webcc_event_offset_ptr, webcc_event_buffer_capacity } = mod.instance.exports;\n";
+    final_js << "    const { webcc_event_buffer_ptr, webcc_event_offset_ptr, webcc_event_buffer_capacity, webcc_scratch_buffer_ptr } = mod.instance.exports;\n";
     final_js << "    const event_buffer_ptr_val = webcc_event_buffer_ptr();\n";
     final_js << "    const event_offset_ptr_val = webcc_event_offset_ptr();\n";
+    final_js << "    const scratch_buffer_ptr_val = webcc_scratch_buffer_ptr();\n";
     final_js << "    let event_offset_view = new Uint32Array(memory.buffer, event_offset_ptr_val, 1);\n";
     final_js << "    let event_u8 = new Uint8Array(memory.buffer, event_buffer_ptr_val);\n";
     final_js << "    let event_i32 = new Int32Array(memory.buffer, event_buffer_ptr_val);\n";
@@ -696,6 +727,7 @@ bool compile_wasm(const std::vector<std::string> &input_files, const std::string
     // Add internal sources using absolute paths relative to the compiler executable
     all_sources.push_back(exe_dir + "/src/core/command_buffer.cc");
     all_sources.push_back(exe_dir + "/src/core/event_buffer.cc");
+    all_sources.push_back(exe_dir + "/src/core/scratch_buffer.cc");
     all_sources.push_back(exe_dir + "/src/core/libc.cc");
 
     std::string object_files_str;

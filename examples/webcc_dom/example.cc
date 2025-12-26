@@ -179,6 +179,10 @@ int main() {
 
     webcc::dom::add_click_listener(add_btn);
 
+    // Test get_attribute with string return
+    webcc::string btn_style = webcc::dom::get_attribute(add_btn, "style");
+    webcc::system::log(webcc::string::concat("Button Style: ", btn_style));
+
     webcc::system::set_main_loop(update);
 
     webcc::flush();

@@ -24,6 +24,16 @@
 - Incremental compilation using `.webcc_cache` for faster rebuilds.
 - Easily extensible API: generates headers and glue code based on a schema definition.
 
+## Benchmarks
+
+WebCC is designed to be lightweight. In a [Canvas 2D benchmark](benchmark/) rendering 10,000 rectangles:
+
+- **Binary Size**: WebCC produces significantly smaller binaries (~11KB WASM) compared to Emscripten (~150KB WASM).
+- **Performance**: WebCC achieves higher FPS by minimizing overhead at the C++/JS boundary.
+- **Memory**: Lower JS and WASM heap usage.
+
+See the [benchmark/](benchmark/) directory for details and to run it yourself.
+
 ## Documentation
 
 Full documentation is available in the [docs/](docs/index.md) directory.

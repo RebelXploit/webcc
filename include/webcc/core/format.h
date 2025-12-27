@@ -85,6 +85,15 @@ public:
         return *this;
     }
 
+    // Overload for float/double (defaults to 2 decimal places)
+    Formatter& operator<<(float val) {
+        return *this << precision(val);
+    }
+
+    Formatter& operator<<(double val) {
+        return *this << precision((float)val);
+    }
+
     // Overload for Floats (via precision wrapper)
     Formatter& operator<<(precision p) {
         int i = (int)p.value;

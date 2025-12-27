@@ -21,12 +21,10 @@ WebCC acts as a wrapper around `clang++`. It:
 3.  **Compiles** your C++ code to WebAssembly.
 4.  **Caches** compiled object files in a `.webcc_cache` directory (located inside the output directory) to speed up subsequent builds.
 
-## Resource Handles vs. Strings
+## Resource Handles
 To maximize performance, WebCC uses **integer handles** to reference resources (like DOM elements, Canvases, Audio objects, and WebGL programs).
 - **Creation**: Functions like `create_element` or `create_canvas` return a unique `int` handle.
 - **Usage**: Subsequent commands use this integer handle, avoiding expensive string lookups or map queries on the JavaScript side during hot code paths (like rendering loops).
-- **Strings**: Strings are still used where necessary (e.g., setting text content, colors, or font styles).
-  - **Per-Frame Deduplication**: WebCC implements a smart string cache that resets every frame. If you use the same string (e.g., setting "red" color for 50 different objects) multiple times in a single frame, the string data is only sent across the WASM boundary **once**. Subsequent uses send a tiny 2-byte ID, significantly reducing bandwidth for repetitive text rendering.
 
 ## Easy Extensibility
 The entire API surface is defined in a single configuration file: `schema.def`.

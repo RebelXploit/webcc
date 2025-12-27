@@ -109,6 +109,7 @@ void draw_image(webcc::handle handle, webcc::handle img_handle, float x, float y
 void draw_image_scaled(webcc::handle handle, webcc::handle img_handle, float x, float y, float w, float h);
 void draw_image_full(webcc::handle handle, webcc::handle img_handle, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 void set_image_smoothing_enabled(webcc::handle handle, uint8_t enabled);
+```
 
 ### Debugging
 

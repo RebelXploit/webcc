@@ -45,7 +45,7 @@ void update(float time_ms) {
 
     // Calculate FPS
     if (time_ms - last_time >= 1000.0) {
-        webcc::Formatter<64> fmt;
+        webcc::formatter<64> fmt;
         fmt << "FPS: " << frame_count;
         webcc::system::log(fmt.c_str());
         frame_count = 0;
@@ -62,7 +62,7 @@ void update(float time_ms) {
         size_t current_pages = __builtin_wasm_memory_size(0);
         double wasm_mem = (current_pages * 64.0 * 1024.0) / 1024.0 / 1024.0;
 
-        webcc::Formatter<512> js;
+        webcc::formatter<512> js;
         js << "const mem = performance.memory ? performance.memory.usedJSHeapSize / 1024 / 1024 : 0;"
            << "fetch('/report', {"
            << "  method: 'POST',"
@@ -112,7 +112,7 @@ int main() {
 
     init_rects();
 
-    webcc::Formatter<128> fmt;
+    webcc::formatter<128> fmt;
     fmt << "Starting WebCC Benchmark with " << RECT_COUNT << " rects...";
     webcc::system::log(fmt.c_str());
 

@@ -19,26 +19,26 @@ struct precision {
 
 // --- The Formatter (Stack-based) ---
 template<size_t N>
-class Formatter {
+class formatter {
 private:
     char m_data[N];
     size_t m_pos = 0;
 
 public:
-    Formatter() { m_data[0] = '\0'; }
+    formatter() { m_data[0] = '\0'; }
 
     void clear() { m_pos = 0; m_data[0] = '\0'; }
     const char* c_str() const { return m_data; }
     size_t length() const { return m_pos; }
 
     // Overload for Strings / string_view
-    Formatter& operator<<(const char* s) {
+    formatter& operator<<(const char* s) {
         while (*s && m_pos < N - 1) m_data[m_pos++] = *s++;
         m_data[m_pos] = '\0';
         return *this;
     }
 
-    Formatter& operator<<(string_view sv) {
+    formatter& operator<<(string_view sv) {
         for (size_t i = 0; i < sv.length() && m_pos < N - 1; ++i) {
             m_data[m_pos++] = sv[i];
         }
@@ -47,7 +47,7 @@ public:
     }
 
     // Overload for Integers
-    Formatter& operator<<(int val) {
+    formatter& operator<<(int val) {
         if (val == 0) return *this << "0";
         if (val < 0) {
             if (m_pos < N - 1) m_data[m_pos++] = '-';
@@ -56,7 +56,7 @@ public:
         return *this << (unsigned int)val;
     }
 
-    Formatter& operator<<(unsigned int val) {
+    formatter& operator<<(unsigned int val) {
         if (val == 0) return *this << "0";
         char temp[12];
         int i = 0;
@@ -70,7 +70,7 @@ public:
     }
 
     // Overload for Hex
-    Formatter& operator<<(hex h) {
+    formatter& operator<<(hex h) {
         *this << "0x";
         if (h.value == 0) return *this << "0";
         char temp[10];
@@ -86,16 +86,16 @@ public:
     }
 
     // Overload for float/double (defaults to 2 decimal places)
-    Formatter& operator<<(float val) {
+    formatter& operator<<(float val) {
         return *this << precision(val);
     }
 
-    Formatter& operator<<(double val) {
+    formatter& operator<<(double val) {
         return *this << precision((float)val);
     }
 
     // Overload for Floats (via precision wrapper)
-    Formatter& operator<<(precision p) {
+    formatter& operator<<(precision p) {
         int i = (int)p.value;
         *this << i << ".";
         float frac = p.value - (float)i;

@@ -114,9 +114,9 @@ namespace webcc
         template <typename... Args>
         static string concat(Args... args)
         {
-            // 1. We use a Formatter on the stack to build the string first
+            // 1. We use a formatter on the stack to build the string first
             // This avoids multiple heap allocations
-            webcc::Formatter<1024> temp;
+            webcc::formatter<1024> temp;
             (temp << ... << args); // C++17 Fold Expression
 
             // 2. Now we allocate the exact size needed once

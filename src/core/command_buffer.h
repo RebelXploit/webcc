@@ -11,7 +11,7 @@ struct CommandBuffer {
     static void push_i32(int32_t v);
     static void push_float(float v);
 
-    // Append a string with caching/interning support (aligned)
+    // Append a string (aligned)
     static void push_string(const char* str, size_t len);
 
     // Accessors used by the JS runtime (exported C symbols call these)

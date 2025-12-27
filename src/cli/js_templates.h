@@ -28,7 +28,6 @@ const std::string JS_FLUSH_HEAD = R"(
     let u8 = new Uint8Array(memory.buffer);
     let i32 = new Int32Array(memory.buffer);
     let f32 = new Float32Array(memory.buffer);
-    const string_cache = [];
 
     function flush(ptr, size) {
         if (size === 0) return;
@@ -41,7 +40,6 @@ const std::string JS_FLUSH_HEAD = R"(
 
         let pos = ptr;
         const end = ptr + size;
-        string_cache.length = 0;
 
         // Loop through the buffer
         while (pos < end) {

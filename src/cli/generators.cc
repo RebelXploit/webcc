@@ -431,21 +431,11 @@ std::string gen_js_case(const CommandDef &c)
         }
         else if (p.type == "string")
         {
-            ss << "                if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "_tag'); break; }\n";
-            ss << "                const " << varName << "_tag = i32[pos >> 2]; pos += 4;\n";
-            ss << "                let " << varName << ";\n";
-            ss << "                if (" << varName << "_tag === 0) {\n";
-            ss << "                    if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "_id'); break; }\n";
-            ss << "                    const " << varName << "_id = i32[pos >> 2]; pos += 4;\n";
-            ss << "                    " << varName << " = string_cache[" << varName << "_id];\n";
-            ss << "                } else {\n";
-            ss << "                    if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "_len'); break; }\n";
-            ss << "                    const " << varName << "_len = i32[pos >> 2]; pos += 4;\n";
-            ss << "                    const " << varName << "_padded = (" << varName << "_len + 3) & ~3;\n";
-            ss << "                    if (pos + " << varName << "_padded > end) { console.error('WebCC: OOB " << varName << "_data'); break; }\n";
-            ss << "                    " << varName << " = decoder.decode(u8.subarray(pos, pos + " << varName << "_len)); pos += " << varName << "_padded;\n";
-            ss << "                    string_cache.push(" << varName << ");\n";
-            ss << "                }\n";
+            ss << "                if (pos + 4 > end) { console.error('WebCC: OOB " << varName << "_len'); break; }\n";
+            ss << "                const " << varName << "_len = i32[pos >> 2]; pos += 4;\n";
+            ss << "                const " << varName << "_padded = (" << varName << "_len + 3) & ~3;\n";
+            ss << "                if (pos + " << varName << "_padded > end) { console.error('WebCC: OOB " << varName << "_data'); break; }\n";
+            ss << "                const " << varName << " = decoder.decode(u8.subarray(pos, pos + " << varName << "_len)); pos += " << varName << "_padded;\n";
         }
         else
         {

@@ -1,7 +1,6 @@
 #pragma once
 #include "allocator.h"
-
-inline void* operator new(size_t, void* p) { return p; }
+#include "new.h"
 
 namespace webcc
 {

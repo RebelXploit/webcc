@@ -39,7 +39,8 @@ if command -v webcc >/dev/null 2>&1 && [ "$(command -v webcc)" -ef "$PWD/webcc" 
 fi
 
 # Only offer install if /usr/local/bin exists (common on Linux/macOS)
-if [ -d "/usr/local/bin" ]; then
+# And we are in an interactive terminal and not in CIs
+if [ -d "/usr/local/bin" ] && [ -t 0 ] && [ -z "$CI" ]; then
     echo ""
     echo "To use 'webcc' from anywhere, it needs to be in your PATH."
     read -p "Would you like to create a symlink in /usr/local/bin? [y/N] " -n 1 -r

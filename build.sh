@@ -31,3 +31,28 @@ g++ -std=c++20 -O3 -o webcc \
 rm webcc_bootstrap
 
 echo "[WebCC] Done."
+
+# Check if webcc is already linked correctly
+if command -v webcc >/dev/null 2>&1 && [ "$(command -v webcc)" -ef "$PWD/webcc" ]; then
+    echo "webcc is already configured in PATH."
+    exit 0
+fi
+
+# Only offer install if /usr/local/bin exists (common on Linux/macOS)
+if [ -d "/usr/local/bin" ]; then
+    echo ""
+    echo "To use 'webcc' from anywhere, it needs to be in your PATH."
+    read -p "Would you like to create a symlink in /usr/local/bin? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        TARGET="/usr/local/bin/webcc"
+        if [ -w /usr/local/bin ]; then
+            ln -sf "$PWD/webcc" "$TARGET"
+        else
+            echo "Need sudo access to write to /usr/local/bin"
+            sudo ln -sf "$PWD/webcc" "$TARGET"
+        fi
+        echo "Symlink created: $TARGET -> $PWD/webcc"
+        echo "You can now use 'webcc' command from any directory."
+    fi
+fi

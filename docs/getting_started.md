@@ -23,7 +23,7 @@ Before you begin, ensure you have the following installed:
     ```bash
     ./build.sh
     ```
-    This will generate the `webcc` binary in the root directory.
+    This will generate the `webcc` binary in the root directory. The script will also offer to install `webcc` to your system PATH.
 
 ## Your First Application
 
@@ -59,8 +59,9 @@ int main() {
 Use the `webcc` tool to compile your C++ code into WebAssembly.
 
 ```bash
-./webcc main.cc --out dist
+webcc main.cc --out dist
 ```
+(Use `./webcc` if you didn't install it to your PATH).
 
 This command will generate the following in the `dist` directory:
 - `app.wasm`: The compiled WebAssembly binary.

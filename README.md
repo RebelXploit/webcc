@@ -122,11 +122,13 @@ int main() {
     ```bash
     ./build.sh
     ```
+    The script will also offer to install `webcc` to your system PATH.
 
 2.  **Compile your app**:
     ```bash
-    ./webcc main.cc
+    webcc main.cc
     ```
+    (Use `./webcc` if you chose not to install it to your PATH).
 
 3.  **Run**:
     ```bash

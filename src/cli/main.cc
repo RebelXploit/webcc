@@ -67,17 +67,17 @@ int main(int argc, char **argv)
         return 0;
     }
 
-#if WEBCC_HAS_SCHEMA
-    defs = webcc::load_defs_from_schema();
-#else
-    defs = webcc::load_defs(defs_path);
-#endif
-
     if (input_files.empty())
     {
         std::cerr << "Usage: webcc [--defs <path>] [--out <dir>] <source.cc> ... or webcc headers" << std::endl;
         return 1;
     }
+
+#if WEBCC_HAS_SCHEMA
+    defs = webcc::load_defs_from_schema();
+#else
+    defs = webcc::load_defs(defs_path);
+#endif
 
     std::string user_code;
     std::string source_files;

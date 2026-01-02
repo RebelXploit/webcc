@@ -8,7 +8,7 @@ namespace webcc
     extern "C" uint8_t __heap_base;
 
     // We use a pointer to keep track of the next free address
-    static uintptr_t heap_ptr = (uintptr_t)&__heap_base;
+    inline uintptr_t heap_ptr = (uintptr_t)&__heap_base;
 
     // Simple Free List Allocator
     struct BlockHeader {
@@ -16,7 +16,7 @@ namespace webcc
         BlockHeader* next;
     };
 
-    static BlockHeader* free_list = nullptr;
+    inline BlockHeader* free_list = nullptr;
 
     inline void *malloc(size_t size)
     {

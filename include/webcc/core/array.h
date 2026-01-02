@@ -25,5 +25,8 @@ namespace webcc
         // Iterator support for: for(auto& x : my_array)
         T *begin() { return &m_data[0]; }
         T *end() { return &m_data[N]; }
+
+        const T *begin() const { return &m_data[0]; }
+        const T *end() const { return &m_data[N]; }
     };
 } // namespace webcc

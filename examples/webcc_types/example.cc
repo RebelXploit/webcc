@@ -8,7 +8,7 @@
 #include "webcc/core/vector.h"
 #include "webcc/core/optional.h"
 #include "webcc/core/unique_ptr.h"
-#include "webcc/core/delegate.h"
+#include "webcc/core/function.h"
 #include "webcc/core/allocator.h"
 
 // Global handles
@@ -19,7 +19,7 @@ webcc::handle button_array;
 webcc::handle button_vector;
 webcc::handle button_unique;
 webcc::handle button_optional;
-webcc::handle button_delegate;
+webcc::handle button_function;
 webcc::handle button_custom;
 webcc::handle button_allocate;
 webcc::handle button_clear;
@@ -149,25 +149,26 @@ void demo_optional() {
     if (!opt) log("Optional reset.");
 }
 
-struct DelegateHandler {
+struct FunctionHandler {
     int multiplier;
     void on_event(int val) {
-        webcc::string msg = webcc::string::concat("Delegate called with ", val, ". Result: ", val * multiplier);
+        webcc::string msg = webcc::string::concat("Function called with ", val, ". Result: ", val * multiplier);
         log(msg.c_str());
     }
 };
 
-void demo_delegate() {
-    log("--- Delegate Demo ---");
+void demo_function() {
+    log("--- Function Demo ---");
     
-    DelegateHandler h;
+    FunctionHandler h;
     h.multiplier = 2;
     
-    auto d = webcc::delegate<int>::from<DelegateHandler, &DelegateHandler::on_event>(&h);
-    d(42);
+    // Using webcc::function with a lambda capturing by reference
+    webcc::function<void(int)> f = [&h](int val) { h.on_event(val); };
+    f(42);
     
     h.multiplier = 10;
-    d(5);
+    f(5);
 }
 
 void demo_vector() {
@@ -209,8 +210,8 @@ void update(float time_ms) {
                 demo_unique_ptr();
             } else if (event->handle == button_optional) {
                 demo_optional();
-            } else if (event->handle == button_delegate) {
-                demo_delegate();
+            } else if (event->handle == button_function) {
+                demo_function();
             } else if (event->handle == button_custom) {
                 log("--- Custom Concat Demo ---");
                 webcc::string custom = webcc::string::concat("Custom", " ", "Concat", " ", "Example", "!");
@@ -244,7 +245,7 @@ int main() {
     webcc::dom::append_child(body, h1);
 
     webcc::handle desc = webcc::dom::create_element("p");
-    webcc::dom::set_inner_text(desc, "This example demonstrates the custom C++ types (string, array, unique_ptr, optional, delegate) and visualizes the bump allocator heap usage. Click the buttons on the left to run individual demos.");
+    webcc::dom::set_inner_text(desc, "This example demonstrates the custom C++ types (string, array, unique_ptr, optional, function) and visualizes the bump allocator heap usage. Click the buttons on the left to run individual demos.");
     webcc::dom::append_child(body, desc);
 
     // Canvas for heap viz
@@ -287,10 +288,10 @@ int main() {
     webcc::dom::set_attribute(button_optional, "style", "position: absolute; left: 20px; top: 290px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
     webcc::dom::append_child(body, button_optional);
 
-    button_delegate = webcc::dom::create_element("button");
-    webcc::dom::set_inner_text(button_delegate, "Delegate Demo");
-    webcc::dom::set_attribute(button_delegate, "style", "position: absolute; left: 20px; top: 320px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
-    webcc::dom::append_child(body, button_delegate);
+    button_function = webcc::dom::create_element("button");
+    webcc::dom::set_inner_text(button_function, "Function Demo");
+    webcc::dom::set_attribute(button_function, "style", "position: absolute; left: 20px; top: 320px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
+    webcc::dom::append_child(body, button_function);
 
     button_custom = webcc::dom::create_element("button");
     webcc::dom::set_inner_text(button_custom, "Custom Concat");
@@ -328,7 +329,7 @@ int main() {
     demo_optional();
     draw_heap_viz();
     
-    demo_delegate();
+    demo_function();
     draw_heap_viz();
     
     demo_vector();
@@ -349,7 +350,7 @@ int main() {
     webcc::dom::add_click_listener(button_vector);
     webcc::dom::add_click_listener(button_unique);
     webcc::dom::add_click_listener(button_optional);
-    webcc::dom::add_click_listener(button_delegate);
+    webcc::dom::add_click_listener(button_function);
     webcc::dom::add_click_listener(button_custom);
     webcc::dom::add_click_listener(button_allocate);
     webcc::dom::add_click_listener(button_clear);

@@ -5,6 +5,7 @@
 #include "webcc/core/string.h"
 #include "webcc/core/string_view.h"
 #include "webcc/core/array.h"
+#include "webcc/core/vector.h"
 #include "webcc/core/optional.h"
 #include "webcc/core/unique_ptr.h"
 #include "webcc/core/delegate.h"
@@ -15,6 +16,7 @@ webcc::handle log_container;
 webcc::handle canvas_ctx;
 webcc::handle button_string;
 webcc::handle button_array;
+webcc::handle button_vector;
 webcc::handle button_unique;
 webcc::handle button_optional;
 webcc::handle button_delegate;
@@ -168,6 +170,30 @@ void demo_delegate() {
     d(5);
 }
 
+void demo_vector() {
+    log("--- Vector Demo ---");
+    
+    webcc::vector<int> vec;
+    vec.push_back(10);
+    vec.push_back(20);
+    vec.push_back(30);
+    
+    webcc::string msg1 = webcc::string::concat("Vector size: ", vec.size(), ", capacity: ", vec.capacity());
+    log(msg1.c_str());
+    
+    vec.push_back(40);
+    vec.push_back(50); // Should trigger reallocation
+    
+    webcc::string msg2 = webcc::string::concat("Vector size: ", vec.size(), ", capacity: ", vec.capacity());
+    log(msg2.c_str());
+    
+    log("Elements:");
+    for(const auto& val : vec) {
+        webcc::string s = webcc::string::concat(" - ", val);
+        log(s.c_str());
+    }
+}
+
 void update(float time_ms) {
     // Poll events
     webcc::Event e;
@@ -177,6 +203,8 @@ void update(float time_ms) {
                 demo_string();
             } else if (event->handle == button_array) {
                 demo_array();
+            } else if (event->handle == button_vector) {
+                demo_vector();
             } else if (event->handle == button_unique) {
                 demo_unique_ptr();
             } else if (event->handle == button_optional) {
@@ -244,6 +272,11 @@ int main() {
     webcc::dom::set_attribute(button_array, "style", "position: absolute; left: 20px; top: 230px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
     webcc::dom::append_child(body, button_array);
 
+    button_vector = webcc::dom::create_element("button");
+    webcc::dom::set_inner_text(button_vector, "Vector Demo");
+    webcc::dom::set_attribute(button_vector, "style", "position: absolute; left: 20px; top: 440px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
+    webcc::dom::append_child(body, button_vector);
+
     button_unique = webcc::dom::create_element("button");
     webcc::dom::set_inner_text(button_unique, "UniquePtr Demo");
     webcc::dom::set_attribute(button_unique, "style", "position: absolute; left: 20px; top: 260px; padding: 5px 10px; font-size: 14px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 3px;");
@@ -278,11 +311,13 @@ int main() {
     draw_heap_viz();
 
     // Run demos
-    // We'll use a small delay or just run them. Since it's single threaded, it will just happen.
-    // To see the heap grow, we can allocate some stuff.
-    
-    demo_string();
+    demo_array();
     draw_heap_viz();
+
+    demo_vector();
+    draw_heap_viz();
+    
+    demo_unique_ptr();
     
     demo_array();
     draw_heap_viz();
@@ -294,6 +329,9 @@ int main() {
     draw_heap_viz();
     
     demo_delegate();
+    draw_heap_viz();
+    
+    demo_vector();
     draw_heap_viz();
     
     // Allocate some extra memory to show growth
@@ -308,6 +346,7 @@ int main() {
     // Init inputs - Use the new Click Listener system
     webcc::dom::add_click_listener(button_string);
     webcc::dom::add_click_listener(button_array);
+    webcc::dom::add_click_listener(button_vector);
     webcc::dom::add_click_listener(button_unique);
     webcc::dom::add_click_listener(button_optional);
     webcc::dom::add_click_listener(button_delegate);

